@@ -113,25 +113,18 @@ function pintarFiltros() {
   );
 }
 
-// "Todos": primero tendencias y ofertas, después el resto mezclado por categoría.
-// Las tendencias (tarjetas dobles) se reparten cada pocas tarjetas para que la grilla respire.
-const CADA = 5;
+// "Todos": una sección por categoría, en el orden del menú, con los combos al final
+// (ya están arriba de todo en el carrusel). Dentro de cada una, tendencias y ofertas primero.
+const SECCIONES = () => [...CATEGORIAS, { id: 'combos', nombre: 'Combos' }];
+const seccionDe = (p) => (SECCIONES().some((s) => s.id === p.categoria) ? p.categoria : 'otros');
+const destacarPrimero = (a, b) => b.tendencia * 2 + b.oferta - (a.tendencia * 2 + a.oferta);
+
 function ordenar(lista) {
-  const tendencias = lista.filter((p) => p.tendencia);
-  const ofertas = lista.filter((p) => p.oferta && !p.tendencia);
-  const resto = lista.filter((p) => !p.tendencia && !p.oferta);
-  const grupos = {};
-  resto.forEach((p) => (grupos[p.categoria] ??= []).push(p));
-  const colas = Object.values(grupos);
-  const mezclado = [];
-  for (let i = 0; mezclado.length < resto.length; i++) colas.forEach((c) => c[i] && mezclado.push(c[i]));
-  const simples = [...ofertas, ...mezclado];
-  const final = [];
-  while (tendencias.length || simples.length) {
-    if (tendencias.length) final.push(tendencias.shift());
-    final.push(...simples.splice(0, CADA - 1));
-  }
-  return final;
+  const orden = [...SECCIONES().map((s) => s.id), 'otros'];
+  return lista
+    .map((p, i) => ({ p, i }))
+    .sort((a, b) => orden.indexOf(seccionDe(a.p)) - orden.indexOf(seccionDe(b.p)) || destacarPrimero(a.p, b.p) || a.i - b.i)
+    .map((x) => x.p);
 }
 
 function lista() {
@@ -173,13 +166,37 @@ export function tarjeta(p, i, { destacar = !estado.busqueda, chapaCombo = estado
     </li>`;
 }
 
+// Título de sección: queda fijo debajo de la fila de categorías mientras se recorre su grupo
+function seccion(clave, cantidad) {
+  if (!clave) return '<div data-seccion=""><ul class="grilla"></ul></div>';
+  const nombre = SECCIONES().find((s) => s.id === clave)?.nombre ?? 'Otros productos';
+  return `<section class="grilla-seccion" data-seccion="${clave}" aria-labelledby="seccion-${clave}">
+      <h3 class="grilla-titulo" id="seccion-${clave}"><span>${nombre}</span><small>${cantidad} ${cantidad === 1 ? 'producto' : 'productos'}</small></h3>
+      <ul class="grilla"></ul>
+    </section>`;
+}
+
 function pintar({ desde = 0 } = {}) {
   const todos = lista().filter((p) => p.precio && p.fotos.length);
   const visibles = todos.slice(0, estado.mostrados);
   const grilla = el('grilla');
-  const html = visibles.slice(desde).map((p, i) => tarjeta(p, desde + i)).join('');
-  if (desde) grilla.insertAdjacentHTML('beforeend', html);
-  else grilla.innerHTML = html;
+  if (!desde) grilla.innerHTML = '';
+  // en "Todos" se agrupa por categoría; filtrado o buscando, una sola grilla
+  const agrupar = estado.filtro === 'todos' && !estado.busqueda;
+  const clave = (p) => (agrupar ? seccionDe(p) : '');
+  // cada tramo de tarjetas de una misma sección va a su grilla (al pedir "Ver más" puede seguir la última)
+  for (let i = desde; i < visibles.length; ) {
+    const c = clave(visibles[i]);
+    let j = i;
+    while (j < visibles.length && clave(visibles[j]) === c) j++;
+    let ul = grilla.querySelector(`[data-seccion="${c}"] .grilla`);
+    if (!ul) {
+      grilla.insertAdjacentHTML('beforeend', seccion(c, todos.filter((p) => clave(p) === c).length));
+      ul = grilla.lastElementChild.querySelector('.grilla');
+    }
+    ul.insertAdjacentHTML('beforeend', visibles.slice(i, j).map((p, k) => tarjeta(p, i + k)).join(''));
+    i = j;
+  }
 
   el('grilla-vacia').hidden = todos.length > 0;
   el('grilla-mas').hidden = visibles.length >= todos.length;

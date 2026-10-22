@@ -18,6 +18,14 @@ export const linkWhatsApp = (texto = '¡Hola RepZone! Tengo una consulta.') =>
   `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
 
 
+// Reels y publicaciones de Instagram que se muestran arriba de las fotos de clientes.
+// Para cambiarlos: pegar acá el link de cada publicación (el de "Copiar enlace" en Instagram).
+export const REELS = [
+  'https://www.instagram.com/p/Deu-C6FGuoV/',
+  'https://www.instagram.com/reel/Dek25SbTfsk/',
+  'https://www.instagram.com/p/DdIALsuTaZZ/',
+];
+
 // Fotos de clientes frecuentes para el carrusel del pie: archivos en public/clientes/
 export const CLIENTES = Array.from({ length: 12 }, (_, i) => `cliente-${String(i + 1).padStart(2, '0')}.webp`);
 

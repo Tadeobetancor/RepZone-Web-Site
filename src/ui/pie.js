@@ -1,4 +1,4 @@
-import { CATEGORIAS, CLIENTES, DESDE_CERO, INSTAGRAM } from '../config.js';
+import { CATEGORIAS, CLIENTES, DESDE_CERO, INSTAGRAM, REELS } from '../config.js';
 
 const IG = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg>`;
 const CAMARA = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
@@ -19,9 +19,51 @@ function clientes() {
   return `<div class="clientes-pista"><div class="clientes-tramo">${tira}</div><div class="clientes-tramo" aria-hidden="true">${tira}</div></div>`;
 }
 
+// Reels de Instagram: el reproductor oficial de cada publicación, en una fila que se desliza.
+// Se cargan recién cuando la sección se acerca a la pantalla.
+function reels() {
+  const lista = REELS.map((url) => url.match(/instagram\.com\/(p|reel|tv)\/([\w-]+)/)).filter(Boolean);
+  if (!lista.length) return '';
+  return `
+    <section class="reels" aria-labelledby="reels-titulo">
+      <div class="contenedor">
+        <p class="etiqueta">Instagram</p>
+        <h2 class="titulo-seccion" id="reels-titulo">Lo último en <span class="rojo">@repzone.arg</span></h2>
+      </div>
+      <div class="reels-pista">
+        ${lista
+          .map(
+            ([, tipo, codigo], i) => `<div class="reel">
+              <iframe src="https://www.instagram.com/${tipo}/${codigo}/embed/" title="Publicación ${i + 1} de Instagram de RepZone"
+                loading="lazy" scrolling="no" allowtransparency="true" allow="encrypted-media; fullscreen"></iframe>
+            </div>`,
+          )
+          .join('')}
+      </div>
+    </section>`;
+}
+
+// El reproductor de Instagram avisa su alto con un mensaje: cada marco se ajusta a su publicación
+function ajustarReels() {
+  addEventListener('message', (e) => {
+    if (e.origin !== 'https://www.instagram.com') return;
+    let datos;
+    try {
+      datos = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+    } catch {
+      return;
+    }
+    if (datos?.type !== 'MEASURE' || !datos.details?.height) return;
+    const marco = [...document.querySelectorAll('.reel iframe')].find((f) => f.contentWindow === e.source);
+    if (marco) marco.style.height = `${Math.ceil(datos.details.height)}px`;
+  });
+}
+
 export function iniciarPie() {
   const anio = new Date().getFullYear();
+  ajustarReels();
   document.getElementById('pie').innerHTML = `
+    ${reels()}
     <section class="clientes" aria-labelledby="clientes-titulo">
       <div class="contenedor">
         <p class="etiqueta">Comunidad RepZone</p>

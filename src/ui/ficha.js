@@ -4,6 +4,7 @@ import { linkWhatsApp } from '../config.js';
 import { abrirPanel, abrirPanelDirecto, cerrarPanel } from './panel.js';
 import { icono, beneficio, colorSabor, tintaSobre } from './iconos.js';
 import { avisar } from './aviso.js';
+import { abrirZoom } from './zoom.js';
 
 const el = (id) => document.getElementById(id);
 const escapar = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -17,6 +18,12 @@ export async function iniciarFicha() {
   addEventListener('abrir-producto', (e) => abrir(e.detail));
 
   el('ficha').addEventListener('click', (e) => {
+    // la lupa o la foto misma: foto ampliada (la que se está viendo en la galería)
+    if (estado && e.target.closest('[data-zoom], .ficha-foto img')) {
+      const galeria = el('ficha-galeria');
+      const i = Math.round(galeria.scrollLeft / galeria.clientWidth);
+      return abrirZoom(estado.p.fotos[i] ?? estado.p.fotos[0], estado.p.nombre);
+    }
     const b = e.target.closest('[data-sabor], [data-tamano], [data-cantidad], [data-agregar], [data-foto]');
     if (!b || !estado) return;
     if (b.dataset.sabor !== undefined) estado.sabor = b.dataset.sabor;
@@ -79,6 +86,7 @@ function pintar() {
       <div class="ficha-galeria" id="ficha-galeria">
         ${fotos.map((f, i) => `<div class="ficha-foto"><img src="${f}" alt="${i ? '' : escapar(p.nombre)}" ${i ? 'loading="lazy"' : ''}></div>`).join('')}
       </div>
+      ${fotos.length ? `<button type="button" class="ficha-zoom" data-zoom aria-label="Ver la foto en grande"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M11 8v6M8 11h6"/></svg></button>` : ''}
       ${fotos.length > 1 ? `<div class="ficha-miniaturas">${fotos.map((f, i) => `<button type="button" data-foto="${i}" aria-label="Ver foto ${i + 1}"><img src="${miniatura(f)}" alt=""></button>`).join('')}</div>` : ''}
       <div class="chapas">
         ${off ? `<span class="chapa chapa-off">-${off}%</span>` : ''}

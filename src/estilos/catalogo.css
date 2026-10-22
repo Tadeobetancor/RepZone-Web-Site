@@ -1,5 +1,7 @@
 /* Catálogo: filtros visibles y grilla de productos (referencia Nightkidz: fotos grandes, nombre y precio debajo) */
 .catalogo {
+  /* alto de la fila de categorías fija (padding de .filtros + alto de un botón) */
+  --filtros-alto: 64px;
   position: relative;
   padding: clamp(48px, 9vw, 96px) 0 clamp(40px, 7vw, 80px);
   background:
@@ -194,6 +196,50 @@
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* Secciones de "Todos": el título queda fijo debajo de la fila de categorías mientras se recorre
+   su grupo, y el de la sección siguiente lo reemplaza al llegar */
+.grilla-seccion + .grilla-seccion {
+  margin-top: 34px;
+}
+
+.grilla-titulo {
+  position: sticky;
+  top: calc(var(--barra-top) + var(--barra-alto) + 8px + var(--filtros-alto));
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 calc(-1 * var(--gutter)) 14px;
+  padding: 8px var(--gutter) 10px;
+  background: rgb(10 10 11 / 0.94);
+  border-bottom: 1px solid rgb(var(--rojo-rgb) / 0.35);
+}
+
+.grilla-titulo span {
+  position: relative;
+  padding-left: 16px;
+  font: italic 900 clamp(1.25rem, 5.4vw, 1.7rem) / 1 var(--fuente-display);
+  font-stretch: 118%;
+  text-transform: uppercase;
+}
+
+/* barrita roja inclinada, como las de la franja */
+.grilla-titulo span::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  bottom: 0.1em;
+  width: 6px;
+  background: var(--rojo);
+  transform: skewX(-14deg);
+}
+
+.grilla-titulo small {
+  color: var(--gris);
+  font: 600 0.8rem/1 var(--fuente);
 }
 
 /* Grilla orgánica: 2 columnas en celular, 4 en computadora; los destacados ocupan doble */

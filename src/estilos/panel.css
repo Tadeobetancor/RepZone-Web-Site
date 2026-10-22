@@ -204,8 +204,44 @@ html:not(.con-movimiento) .particulas span {
 }
 
 .ficha-galeria-caja .chapas {
-  top: 16px;
-  left: 16px;
+  top: 22px;
+  left: 66px;
+}
+
+/* Lupa arriba a la izquierda: abre la foto en grande (también se abre tocando la foto) */
+.ficha-zoom {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 50%;
+  background: rgb(10 10 11 / 0.6);
+  transition: background-color 0.2s, transform 0.2s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ficha-zoom .icono {
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) {
+  .ficha-zoom:hover {
+    background: var(--rojo);
+  }
+}
+
+.ficha-zoom:active {
+  transform: scale(0.92);
+}
+
+.ficha-foto img {
+  cursor: zoom-in;
 }
 
 .ficha-info {
