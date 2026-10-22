@@ -361,7 +361,8 @@
   opacity: 0.6;
 }
 
-/* línea de escaneo */
+/* línea de escaneo: una capa del alto de las fotos con la línea en su borde de arriba.
+   Baja con transform, que no obliga a recalcular la página en cada cuadro */
 .gancho-fotos::before {
   content: '';
   position: absolute;
@@ -369,9 +370,10 @@
   right: -4%;
   top: 0;
   z-index: 2;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgb(var(--holo)), transparent);
-  box-shadow: 0 0 12px 2px rgb(var(--holo) / 0.7);
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent, rgb(var(--holo)), transparent) 0 0 / 100% 2px no-repeat,
+    radial-gradient(50% 7px at 50% 1px, rgb(var(--holo) / 0.55), transparent) 0 0 / 100% 16px no-repeat;
   opacity: 0;
 }
 
@@ -381,14 +383,6 @@
 
 .con-movimiento .gancho-fotos img:nth-child(2) {
   animation-delay: -2s;
-}
-
-.con-movimiento /* una sola foto (combos): centrada y más grande */
-.gancho-fotos img:only-child {
-  right: 8%;
-  height: 100%;
-  max-width: 92%;
-  rotate: 4deg;
 }
 
 .gancho-fotos img:nth-child(3) {
@@ -422,45 +416,79 @@
 
 @keyframes escaneo {
   0% {
-    top: 0;
+    transform: translateY(0);
     opacity: 0;
   }
   8% {
     opacity: 1;
   }
   45% {
-    top: 100%;
+    transform: translateY(100%);
     opacity: 1;
   }
   52%,
   100% {
-    top: 100%;
+    transform: translateY(100%);
     opacity: 0;
   }
 }
 
-/* Pulso suave del brillo exterior: "tocame" */
-.con-movimiento .gancho-grande.gancho-combos {
-  animation: pulso-rojo 3.2s ease-in-out infinite;
+/* Pulso suave del brillo exterior: "tocame".
+   El brillo es una capa fija detrás de cada tarjeta (los ::before/::after de la grilla) que solo
+   cambia de opacidad: animar la sombra de la tarjeta la repintaba entera en cada cuadro */
+.ganchos .gancho-combos {
+  grid-area: 1 / 1;
+  z-index: 1;
 }
 
-.con-movimiento .gancho-grande.gancho-ofertas {
-  animation: pulso-blanco 3.2s 1.6s ease-in-out infinite;
+.ganchos .gancho-ofertas {
+  grid-area: 2 / 1;
+  z-index: 1;
 }
 
-.gancho-grande:hover,
-.gancho-grande:active {
-  animation-play-state: paused;
+.ganchos::before,
+.ganchos::after {
+  content: '';
+  position: relative;
+  border-radius: 28px;
+  opacity: 0;
+  pointer-events: none;
 }
 
-@keyframes pulso-rojo {
-  50% {
-    box-shadow: 0 6px 0 var(--sombra), 0 22px 64px -6px rgb(var(--rojo-rgb) / 0.9);
+.ganchos::before {
+  grid-area: 1 / 1;
+  box-shadow: 0 22px 64px -6px rgb(var(--rojo-rgb) / 0.9);
+}
+
+.ganchos::after {
+  grid-area: 2 / 1;
+  box-shadow: 0 22px 64px -10px rgb(255 255 255 / 0.45);
+}
+
+@media (min-width: 768px) {
+  .ganchos .gancho-ofertas,
+  .ganchos::after {
+    grid-area: 1 / 2;
   }
 }
 
-@keyframes pulso-blanco {
+.con-movimiento .ganchos::before {
+  animation: pulso 3.2s ease-in-out infinite;
+}
+
+.con-movimiento .ganchos::after {
+  animation: pulso 3.2s 1.6s ease-in-out infinite;
+}
+
+/* al pasar el mouse la tarjeta se hunde: sin brillo detrás */
+.ganchos:has(.gancho-combos:hover, .gancho-combos:active)::before,
+.ganchos:has(.gancho-ofertas:hover, .gancho-ofertas:active)::after {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes pulso {
   50% {
-    box-shadow: 0 6px 0 var(--sombra), 0 22px 64px -10px rgb(255 255 255 / 0.45);
+    opacity: 1;
   }
 }

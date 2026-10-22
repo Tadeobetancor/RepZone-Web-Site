@@ -1,4 +1,4 @@
-import { cargarCatalogo, formatoPrecio } from '../datos.js';
+import { cargarCatalogo, formatoPrecio, miniatura } from '../datos.js';
 import { carrito, lineas, mensajeWhatsApp, linkPedido, textoSabor } from '../carrito.js';
 import { abrirPanel, cerrarPanel } from './panel.js';
 
@@ -8,7 +8,7 @@ const CLAVE_DATOS = 'repzone-datos-pedido';
 
 let catalogo = [];
 // Datos de entrega: se recuerdan para el próximo pedido
-let datos = { entrega: null, nombre: '', zona: '' };
+let datos = { entrega: null, nombre: '', zona: '', domicilio: '' };
 try {
   datos = { ...datos, ...JSON.parse(localStorage.getItem(CLAVE_DATOS) || '{}') };
 } catch {}
@@ -52,8 +52,9 @@ export async function iniciarCarrito() {
   panel.addEventListener('input', (e) => {
     const campo = e.target.dataset.campo;
     if (!campo) return;
-    datos[campo] = e.target.value.slice(0, 60);
+    datos[campo] = e.target.value.slice(0, 80);
     guardarDatos();
+    if (e.target.value.trim()) e.target.removeAttribute('aria-invalid');
     actualizarLink();
   });
 }
@@ -114,7 +115,7 @@ function pintarLista() {
     .map(
       (l) => `
       <li class="linea" data-entra>
-        <img src="${l.producto.fotos[0]}" alt="">
+        <img src="${miniatura(l.producto.fotos[0])}" alt="" decoding="async">
         <div class="linea-info">
           <span class="producto-marca">${escapar(l.producto.marca)}</span>
           <span class="linea-nombre">${escapar(l.producto.nombre)}</span>
@@ -157,8 +158,13 @@ function pintarPie() {
       </div>
     </fieldset>
     <div class="carrito-campos">
-      <label><span>Tu nombre <small>(opcional)</small></span><input type="text" data-campo="nombre" value="${escapar(datos.nombre)}" autocomplete="given-name" maxlength="60"></label>
-      ${datos.entrega === 'envio' ? `<label><span>Barrio o localidad <small>(opcional)</small></span><input type="text" data-campo="zona" value="${escapar(datos.zona)}" autocomplete="address-level2" maxlength="60"></label>` : ''}
+      ${
+        datos.entrega === 'envio'
+          ? `<label><span>Barrio o localidad</span><input type="text" data-campo="zona" value="${escapar(datos.zona)}" autocomplete="address-level2" maxlength="80" required placeholder="Ej: Villa Tesei"></label>
+      <label><span>Domicilio</span><input type="text" data-campo="domicilio" value="${escapar(datos.domicilio)}" autocomplete="street-address" maxlength="80" required placeholder="Calle, número, piso o depto"></label>`
+          : ''
+      }
+      <label><span>Tu nombre <small>(opcional)</small></span><input type="text" data-campo="nombre" value="${escapar(datos.nombre)}" autocomplete="given-name" maxlength="80"></label>
     </div>
     <div class="carrito-total"><span>Total</span><b>${formatoPrecio(total)}</b></div>
     <a class="btn btn-wa" id="carrito-enviar" target="_blank" rel="noopener">
@@ -168,23 +174,34 @@ function pintarPie() {
     <button type="button" class="carrito-vaciar" data-vaciar>Vaciar carrito</button>`;
   const enviar = el('carrito-enviar');
   enviar.addEventListener('click', (e) => {
-    if (!datos.entrega) {
-      e.preventDefault();
-      const f = el('carrito').querySelector('.entrega');
-      f.classList.remove('sacudir');
-      void f.offsetWidth;
-      f.classList.add('sacudir');
-      f.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    if (listo()) return;
+    e.preventDefault();
+    if (!datos.entrega) return sacudir(el('carrito').querySelector('.entrega'));
+    // con envío: se marcan los datos de la dirección que faltan y se va al primero
+    const vacios = faltanDireccion().map((c) => el('carrito').querySelector(`[data-campo="${c}"]`));
+    vacios.forEach((i) => i.setAttribute('aria-invalid', 'true'));
+    sacudir(vacios[0].closest('label'));
+    vacios[0].focus({ preventScroll: true });
   });
   actualizarLink();
 }
 
+function sacudir(f) {
+  f.classList.remove('sacudir');
+  void f.offsetWidth;
+  f.classList.add('sacudir');
+  f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Con envío hacen falta barrio o localidad y domicilio
+const faltanDireccion = () => (datos.entrega === 'envio' ? ['zona', 'domicilio'].filter((c) => !datos[c].trim()) : []);
+const listo = () => Boolean(datos.entrega) && !faltanDireccion().length;
+
 function actualizarLink() {
   const enviar = el('carrito-enviar');
   if (!enviar) return;
-  const listo = Boolean(datos.entrega);
-  enviar.classList.toggle('falta', !listo);
-  el('carrito-enviar-texto').textContent = listo ? 'Enviar pedido por WhatsApp' : 'Elegí envío o retiro';
-  enviar.href = listo ? linkPedido(mensajeWhatsApp(lineas(catalogo), datos)) : '#';
+  const ok = listo();
+  enviar.classList.toggle('falta', !ok);
+  el('carrito-enviar-texto').textContent = ok ? 'Enviar pedido por WhatsApp' : !datos.entrega ? 'Elegí envío o retiro' : 'Completá barrio y domicilio';
+  enviar.href = ok ? linkPedido(mensajeWhatsApp(lineas(catalogo), datos)) : '#';
 }

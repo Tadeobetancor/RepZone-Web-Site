@@ -25,8 +25,13 @@ export function iniciarCargador() {
 
   return new Promise((listo) => {
     const terminar = () => {
+      // el logo de la barra aparece de golpe justo debajo del que viajó: con fundido se veía un parpadeo
+      const img = destino.querySelector('img');
+      img.style.transition = 'none';
       raiz.classList.remove('cargando');
       cargador.remove();
+      getComputedStyle(img).opacity; // aplica la opacidad nueva sin transición
+      img.style.transition = '';
       dispatchEvent(new CustomEvent('carga-lista'));
       listo();
     };

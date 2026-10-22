@@ -6,14 +6,24 @@ Los productos de la web salen de una planilla de Google. Lo que cambies ahí se 
 ## Armar la planilla (una sola vez)
 
 1. Entrá a [Google Sheets](https://sheets.google.com) con la cuenta de RepZone y creá una planilla nueva.
-2. **Archivo › Importar › Subir** y elegí `public/catalogo.csv` (está en esta carpeta).
-   En "Ubicación" elegí **Reemplazar hoja de cálculo**.
-3. **Archivo › Compartir › Publicar en la Web**: elegí la hoja, formato **Valores separados por comas (.csv)** y tocá **Publicar**.
-4. Copiá el link que te da Google y pasáselo a Desde Cero: va en `src/datos.js`, en `PLANILLA_CSV`.
+2. **Archivo › Importar › Subir** y elegí `RepZone-catalogo.xlsx` (está en esta carpeta).
+   En "Ubicación" elegí **Reemplazar hoja de cálculo**. Queda armada con colores, una sección por categoría,
+   listas desplegables y una pestaña **Cómo usar** con la ayuda para el cliente.
+3. **Archivo › Compartir › Publicar en la Web**: elegí la pestaña **Productos** (no "Todo el documento"),
+   formato **Valores separados por comas (.csv)** y tocá **Publicar**.
+4. Copiá el link que te da Google (termina en `output=csv`) y pegalo en `src/datos.js`, en `PLANILLA_CSV`.
+   Subí el cambio a GitHub y Vercel publica solo.
 
-Si algún día Google no responde, la web muestra la copia de respaldo (`public/catalogo.csv`), así que nunca queda vacía.
+La primera fila (los nombres de las columnas) no se cambia, y la columna `id` tiene que seguir siendo la primera.
+
+Si algún día Google tarda o no responde, la web muestra la última copia de la planilla que guardó ese celular
+o, si no hay, la copia de respaldo (`public/catalogo.csv`). Nunca queda vacía.
 
 ## Una fila = un producto
+
+En la planilla las columnas tienen nombres para el cliente ("Producto", "Precio anterior (tachado)", "¿Hay stock?",
+"Código (no tocar)"...). La web reconoce esos nombres y también los de esta tabla, que son los de `public/catalogo.csv`.
+Las filas de sección (un nombre sin precio) y las filas de título de arriba no se leen como productos.
 
 | Columna | Qué poner | Ejemplo |
 | --- | --- | --- |
@@ -25,7 +35,7 @@ Si algún día Google no responde, la web muestra la copia de respaldo (`public/
 | `precio_anterior` | Si está en oferta, el precio de antes (se muestra tachado). Si no, vacío | `84400` |
 | `tamaños` | Opcional. Cada tamaño con su precio, separados por `\|` | `1 kg = 76900 \| 2 kg = 139000` |
 | `sabores` | Separados por `\|`. Si querés, un color para el botón | `Chocolate #5A3A22 \| Vainilla` |
-| `fotos` | Nombre del archivo en `public/productos/`, o un link a una imagen. Varias con `\|` | `star-whey-doypack-1kg.webp` |
+| `fotos` | Nombre del archivo en `public/productos/` (la versión chica para la grilla se genera sola al publicar), o un link a una imagen. Varias con `\|` | `star-whey-doypack-1kg.webp` |
 | `beneficios` | Frases cortas con su ícono, separadas por `\|` | `musculo: Ayuda a ganar músculo \| rapido: Se prepara en segundos` |
 | `composicion`, `tabla_nutricional`, `modo_uso` | Texto libre (va en el desplegable de la ficha) | |
 | `oferta` | `SI` para que aparezca en Ofertas | `SI` |

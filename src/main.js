@@ -10,6 +10,7 @@ import './estilos/panel.css';
 import './estilos/pie.css';
 import './estilos/whatsapp.css';
 
+import { cargarCatalogo } from './datos.js';
 import { iniciarCargador } from './ui/cargador.js';
 import { iniciarWhatsApp } from './ui/whatsapp-fab.js';
 import { iniciarMenu } from './ui/menu.js';
@@ -22,8 +23,12 @@ import { iniciarGrilla } from './ui/grilla.js';
 import { iniciarPie } from './ui/pie.js';
 import { iniciarFicha } from './ui/ficha.js';
 import { iniciarCarrito } from './ui/carrito-panel.js';
+import { iniciarPausa } from './ui/pausa.js';
 
+// el catálogo se pide primero: mientras corre la pantalla de carga ya está bajando
+cargarCatalogo();
 iniciarCargador();
+iniciarPausa();
 iniciarWhatsApp();
 iniciarMenu();
 iniciarBuscador();

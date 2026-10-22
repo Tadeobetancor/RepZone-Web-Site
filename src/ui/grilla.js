@@ -1,4 +1,4 @@
-import { cargarCatalogo, formatoPrecio, descuento, buscar } from '../datos.js';
+import { cargarCatalogo, formatoPrecio, descuento, buscar, miniatura, fotoAdaptable } from '../datos.js';
 import { CATEGORIAS } from '../config.js';
 
 const POR_PAGINA = 24;
@@ -158,7 +158,7 @@ export function tarjeta(p, i, { destacar = !estado.busqueda, chapaCombo = estado
     <li class="producto tono-${tono}${destacado ? ' destacado' : ''}" style="--d:${i % 4}">
       <button class="producto-tocar" type="button" data-id="${p.id}" aria-label="${p.nombre}, ${p.marca}, ${formatoPrecio(p.precio)}"></button>
       <div class="producto-foto">
-        <img src="${p.fotos[0]}" alt="" loading="lazy" decoding="async">
+        <img ${destacado ? fotoAdaptable(p.fotos[0], '(min-width: 1024px) 45vw, 75vw') : `src="${miniatura(p.fotos[0])}"`} alt="" loading="lazy" decoding="async">
         <div class="chapas">${etiquetas}</div>
       </div>
       <div class="producto-info">

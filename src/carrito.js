@@ -80,7 +80,7 @@ export function textoSabor(producto, sabor) {
   return 'único';
 }
 
-export function mensajeWhatsApp(ls, { entrega, nombre, zona }) {
+export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
   const total = ls.reduce((s, l) => s + l.subtotal, 0);
   const renglones = ls.map((l) => {
     const detalle = [l.producto.marca, l.tamano].filter(Boolean).join(' · ');
@@ -95,7 +95,10 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona }) {
     `*Total: ${formatoPrecio(total)}*`,
     entrega === 'envio' ? 'Entrega: Envío (a cotizar)' : 'Entrega: Retiro (a coordinar)',
   ];
-  if (entrega === 'envio' && zona) partes.push(`Zona: ${zona}`);
+  if (entrega === 'envio') {
+    if (zona) partes.push(`Barrio/localidad: ${zona.trim()}`);
+    if (domicilio) partes.push(`Domicilio: ${domicilio.trim()}`);
+  }
   if (nombre) partes.push(`Nombre: ${nombre}`);
   return partes.join('\n');
 }

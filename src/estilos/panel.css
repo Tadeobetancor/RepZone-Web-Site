@@ -18,12 +18,11 @@ html.panel-abierto {
   overflow: hidden;
 }
 
+/* fondo oscuro sin desenfoque: así el panel se despliega fluido también en celulares modestos */
 .panel-fondo {
   position: absolute;
   inset: 0;
-  background: rgb(0 0 0 / 0.62);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  background: rgb(0 0 0 / 0.72);
 }
 
 .panel-hoja:focus {
@@ -746,6 +745,16 @@ html:not(.con-movimiento) .particulas span {
   border-color: var(--rojo);
 }
 
+.carrito-campos input::placeholder {
+  color: var(--gris-2);
+}
+
+/* dato de envío que falta completar */
+.carrito-campos input[aria-invalid='true'] {
+  border-color: var(--rojo-vivo);
+  background: rgb(var(--rojo-rgb) / 0.12);
+}
+
 .carrito-total {
   display: flex;
   align-items: baseline;
@@ -778,33 +787,30 @@ html:not(.con-movimiento) .particulas span {
 }
 
 /* Con productos adentro, el carrito titila suave: anillo rojo que late y el ícono se enciende */
-.con-movimiento .carrito-btn.con-items {
+/* (el anillo es una capa aparte que solo cambia de opacidad: no repinta la barra de vidrio) */
+.carrito-btn.con-items::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgb(var(--rojo-rgb) / 0.18);
+  box-shadow: 0 0 0 4px rgb(var(--rojo-rgb) / 0.35), 0 0 18px rgb(var(--rojo-rgb) / 0.6);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.con-movimiento .carrito-btn.con-items::before {
   animation: titilar 1.8s ease-in-out infinite;
 }
 
-.con-movimiento .carrito-btn.con-items .icono {
-  animation: titilar-icono 1.8s ease-in-out infinite;
-}
-
 .carrito-btn.con-items .icono {
+  position: relative;
   color: var(--rojo-vivo);
 }
 
 @keyframes titilar {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgb(var(--rojo-rgb) / 0);
-    background-color: transparent;
-  }
   50% {
-    box-shadow: 0 0 0 4px rgb(var(--rojo-rgb) / 0.35), 0 0 18px rgb(var(--rojo-rgb) / 0.6);
-    background-color: rgb(var(--rojo-rgb) / 0.18);
-  }
-}
-
-@keyframes titilar-icono {
-  50% {
-    color: #fff;
+    opacity: 1;
   }
 }
 

@@ -1,4 +1,4 @@
-import { cargarCatalogo, buscar, formatoPrecio } from '../datos.js';
+import { cargarCatalogo, buscar, formatoPrecio, miniatura } from '../datos.js';
 import { aplicar } from './grilla.js';
 
 const MAX_RESULTADOS = 6;
@@ -70,7 +70,7 @@ export function iniciarBuscador() {
           .map(
             (p, i) => `
           <button type="button" class="resultado" id="resultado-${i}" role="option" data-i="${i}">
-            <img src="${p.fotos[0]}" alt="" loading="lazy">
+            <img src="${miniatura(p.fotos[0])}" alt="" loading="lazy" decoding="async">
             <span class="resultado-texto"><small>${p.marca}</small><span>${p.nombre}</span></span>
             <b>${formatoPrecio(p.precio)}</b>
           </button>`,

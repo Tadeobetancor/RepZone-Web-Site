@@ -1,4 +1,4 @@
-import { cargarCatalogo, formatoPrecio, descuento } from '../datos.js';
+import { cargarCatalogo, formatoPrecio, descuento, miniatura } from '../datos.js';
 import { carrito, precioDe } from '../carrito.js';
 import { linkWhatsApp } from '../config.js';
 import { abrirPanel, abrirPanelDirecto, cerrarPanel } from './panel.js';
@@ -79,7 +79,7 @@ function pintar() {
       <div class="ficha-galeria" id="ficha-galeria">
         ${fotos.map((f, i) => `<div class="ficha-foto"><img src="${f}" alt="${i ? '' : escapar(p.nombre)}" ${i ? 'loading="lazy"' : ''}></div>`).join('')}
       </div>
-      ${fotos.length > 1 ? `<div class="ficha-miniaturas">${fotos.map((f, i) => `<button type="button" data-foto="${i}" aria-label="Ver foto ${i + 1}"><img src="${f}" alt=""></button>`).join('')}</div>` : ''}
+      ${fotos.length > 1 ? `<div class="ficha-miniaturas">${fotos.map((f, i) => `<button type="button" data-foto="${i}" aria-label="Ver foto ${i + 1}"><img src="${miniatura(f)}" alt=""></button>`).join('')}</div>` : ''}
       <div class="chapas">
         ${off ? `<span class="chapa chapa-off">-${off}%</span>` : ''}
         ${p.combo ? '<span class="chapa chapa-combo">Combo</span>' : ''}

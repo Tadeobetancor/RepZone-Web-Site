@@ -8,3 +8,9 @@ dist
 /referencias/
 /pagina en html/
 /pagina vieja de repzone/
+
+# Miniaturas: se generan solas al compilar (scripts/miniaturas.mjs)
+/public/productos/400/
+
+# Planilla para importar en Google Sheets (una sola vez; después manda la de Google)
+/RepZone-catalogo.xlsx

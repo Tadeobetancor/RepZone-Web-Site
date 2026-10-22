@@ -1,4 +1,4 @@
-import { cargarCatalogo, formatoPrecio } from '../datos.js';
+import { cargarCatalogo, formatoPrecio, miniatura } from '../datos.js';
 
 // Botones gancho: etiquetas con datos reales y fotos de productos flotando
 export async function iniciarGanchos() {
@@ -23,6 +23,6 @@ export async function iniciarGanchos() {
   };
   document.querySelectorAll('[data-fotos]').forEach((caja) => {
     const elegidas = [...new Set(fotos[caja.dataset.fotos].map((p) => p.fotos[0]))].slice(0, caja.dataset.fotos === 'combos' ? 1 : 2);
-    caja.innerHTML = elegidas.map((src) => `<img src="${src}" alt="" loading="lazy" decoding="async">`).join('');
+    caja.innerHTML = elegidas.map((src) => `<img src="${miniatura(src)}" alt="" loading="lazy" decoding="async">`).join('');
   });
 }

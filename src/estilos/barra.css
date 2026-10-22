@@ -79,41 +79,48 @@
   transition: opacity 0.2s;
 }
 
+/* glow difuminado con el propio degradé (sin filtro: no hay que recalcular un desenfoque) */
 .barra-logo::before {
   content: '';
   position: absolute;
-  inset: -6px -14px;
+  inset: -14px -24px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(var(--rojo-rgb) / 0.35), transparent);
-  filter: blur(8px);
+  background: radial-gradient(closest-side, rgb(var(--rojo-rgb) / 0.3), rgb(var(--rojo-rgb) / 0.1) 60%, transparent);
 }
 
-.barra-logo::after {
-  content: '';
+/* El brillo: una franja que se desplaza con transform dentro de la silueta del logo */
+.barra-logo-brillo {
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 40%, rgb(255 255 255 / 0.9) 50%, transparent 60%) 0 0 / 300% 100% no-repeat;
-  background-position: 120% 0;
+  overflow: hidden;
   -webkit-mask: url('/logo-repzone.png') center / contain no-repeat;
   mask: url('/logo-repzone.png') center / contain no-repeat;
   pointer-events: none;
 }
 
-.con-movimiento .barra-logo::after {
+.barra-logo-brillo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.9) 50%, transparent 65%);
+  transform: translateX(-100%);
+}
+
+.con-movimiento .barra-logo-brillo::before {
   animation: brillo 8s 6s ease-in-out infinite;
 }
 
-.cargando .barra-logo::after {
+.cargando .barra-logo-brillo::before {
   animation: none;
 }
 
 @keyframes brillo {
   0% {
-    background-position: 120% 0;
+    transform: translateX(-100%);
   }
   35%,
   100% {
-    background-position: -20% 0;
+    transform: translateX(100%);
   }
 }
 

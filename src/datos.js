@@ -1,23 +1,65 @@
-// Catálogo: se lee de un CSV con una fila por producto (la misma forma que la planilla de Google).
-// Mientras no esté conectada la planilla se usa public/catalogo.csv, que además queda como respaldo.
+// Catálogo: se lee de un CSV con una fila por producto (la planilla de Google publicada como CSV).
+// La planilla puede tener un título arriba, nombres de columna amigables ("Precio anterior", "¿Hay stock?")
+// y filas de sección (un nombre sin precio): todo eso se reconoce acá.
+// Orden: la planilla → la última copia que este navegador bajó de la planilla → public/catalogo.csv.
+// La planilla se pide apenas abre la página, así que la espera queda tapada por la pantalla de carga.
 
-export const PLANILLA_CSV = ''; // Parte 3: URL de la planilla publicada como CSV
+// Link de la planilla publicada como CSV (Archivo › Compartir › Publicar en la Web › .csv).
+// Vacío = se usa public/catalogo.csv.
+export const PLANILLA_CSV =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqOPBy56Nn_JZ5jEppK64PWk0uh8VuSF1MpzrbADxqWH1ulgWhfEy5GZFkZyxmsfwFgglKkOwcgbZN/pub?gid=1507347419&single=true&output=csv';
 const RESPALDO = '/catalogo.csv';
+const ESPERA_MAXIMA = 4000; // si Google tarda más, se muestra la última copia y no se hace esperar al cliente
+const CLAVE_COPIA = 'repzone-catalogo';
+
+import { CATEGORIAS } from './config.js';
 
 let promesa;
 
 export function cargarCatalogo() {
-  promesa ??= leer(PLANILLA_CSV)
-    .catch(() => leer(RESPALDO))
-    .then((filas) => filas.map(normalizar).filter((p) => p.id && p.nombre && p.stock));
+  promesa ??= leerPlanilla().catch(async () => {
+    const copia = copiaGuardada();
+    return (copia && productos(copia)) || productos(await leer(RESPALDO));
+  });
   return promesa;
 }
 
-async function leer(url) {
-  if (!url) throw new Error('sin planilla');
-  const r = await fetch(url, { cache: 'no-cache' });
+// Un producto necesita nombre y precio: así las filas de sección de la planilla quedan afuera
+const productos = (texto) =>
+  parsearCSV(texto)
+    .map(normalizar)
+    .filter((p) => p.nombre && p.precio && p.stock);
+
+async function leerPlanilla() {
+  if (!PLANILLA_CSV) throw new Error('sin planilla');
+  const corte = new AbortController();
+  const reloj = setTimeout(() => corte.abort(), ESPERA_MAXIMA);
+  try {
+    const texto = await leer(PLANILLA_CSV, corte.signal);
+    // una planilla vacía o una página de error de Google no reemplazan al catálogo
+    const lista = productos(texto);
+    if (!lista.length) throw new Error('la planilla no tiene productos');
+    try {
+      localStorage.setItem(CLAVE_COPIA, texto);
+    } catch {}
+    return lista;
+  } finally {
+    clearTimeout(reloj);
+  }
+}
+
+function copiaGuardada() {
+  try {
+    return localStorage.getItem(CLAVE_COPIA) || null;
+  } catch {
+    return null;
+  }
+}
+
+async function leer(url, signal) {
+  const r = await fetch(url, { cache: 'no-cache', signal });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return parsearCSV(await r.text());
+  return r.text();
 }
 
 const si = (v) => /^(si|sí|s|x|1|true)$/i.test(String(v).trim());
@@ -27,17 +69,27 @@ const numero = (v) => {
   return n > 0 ? n : null;
 };
 
+// La categoría se puede escribir como la ve el cliente ("Proteínas") o con su código ("proteinas")
+function categoria(v) {
+  const t = normalizarTexto(v || '');
+  const c = CATEGORIAS.find((c) => normalizarTexto(c.id) === t || normalizarTexto(c.nombre) === t);
+  return c ? c.id : t.replace(/ /g, '-');
+}
+
 function normalizar(f) {
   const stock = String(f.stock ?? '').trim();
+  const nombre = f.nombre?.trim();
+  const marca = f.marca?.trim() || '';
   return {
-    id: f.id?.trim(),
-    nombre: f.nombre?.trim(),
-    marca: f.marca?.trim() || '',
-    categoria: f.categoria?.trim() || '',
+    // sin código, se arma uno con la marca y el nombre (sirve para el carrito y el link del producto)
+    id: f.id?.trim() || normalizarTexto(`${marca} ${nombre || ''}`).replace(/ /g, '-'),
+    nombre,
+    marca,
+    categoria: categoria(f.categoria),
     precio: numero(f.precio),
     precioAnterior: numero(f.precio_anterior),
     // "200 g = 5100 | 400 g = 7500"
-    tamanos: lista(f['tamaños']).map((t) => {
+    tamanos: lista(f.tamanos).map((t) => {
       const [nombre, precio] = t.split('=').map((s) => s.trim());
       return { nombre, precio: numero(precio) };
     }),
@@ -87,10 +139,40 @@ export function parsearCSV(texto) {
     } else campo += c;
   }
   if (campo || fila.length) filas.push([...fila, campo]);
-  const [cabecera, ...resto] = filas.filter((f) => f.some((c) => c.trim()));
-  const claves = cabecera.map((c) => c.trim().toLowerCase());
-  return resto.map((f) => Object.fromEntries(claves.map((k, i) => [k, f[i] ?? ''])));
+  const llenas = filas.filter((f) => f.some((c) => c.trim()));
+  // la fila de nombres de columna es la primera que tiene la del producto y la del precio
+  // (arriba puede haber un título o ayudas)
+  const i = llenas.findIndex((f) => f.map(columna).includes('nombre') && f.map(columna).includes('precio'));
+  if (i < 0) return [];
+  const claves = llenas[i].map(columna);
+  return llenas.slice(i + 1).map((f) => Object.fromEntries(claves.map((k, j) => [k, f[j] ?? ''])));
 }
+
+// Nombres de columna: los de la planilla para el cliente y los originales (catalogo.csv)
+const COLUMNAS = {
+  codigo: 'id',
+  producto: 'nombre',
+  precio_anterior_tachado: 'precio_anterior',
+  hay_stock: 'stock',
+  en_oferta: 'oferta',
+  destacado: 'tendencia',
+  es_combo: 'combo',
+  modo_de_uso: 'modo_uso',
+  notas: 'nota',
+  notas_internas: 'nota',
+};
+const columna = (t) => {
+  const k = normalizarTexto(String(t).replace(/\(.*?\)/g, '')).replace(/ /g, '_');
+  return COLUMNAS[k] || k;
+};
+
+// Foto chica (400 px) para tarjetas y listas: pesa menos y el celular la dibuja más rápido.
+// Las genera scripts/miniaturas.mjs; las fotos con link externo se usan tal cual.
+export const miniatura = (src) => (src.startsWith('/productos/') ? src.replace('/productos/', '/productos/400/').replace(/\.\w+$/, '.webp') : src);
+
+// Foto chica o grande según el lugar que ocupa en la pantalla
+export const fotoAdaptable = (src, sizes) =>
+  src.startsWith('/productos/') ? `src="${miniatura(src)}" srcset="${miniatura(src)} 400w, ${src} 800w" sizes="${sizes}"` : `src="${src}"`;
 
 export const formatoPrecio = (n) => '$' + n.toLocaleString('es-AR');
 

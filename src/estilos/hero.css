@@ -173,14 +173,35 @@
   aspect-ratio: 1;
 }
 
+/* luz roja de contorno (como un foco de estadio) y sombra en el piso, hechas con degradés:
+   se ven igual que un filtro de sombra pero no hay que recalcularlas al deslizar */
+.combo-foto::before,
+.combo-foto::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.combo-foto::before {
+  inset: 12% 8% 8%;
+  background: radial-gradient(closest-side, rgb(var(--rojo-rgb) / 0.42), rgb(var(--rojo-rgb) / 0.12) 60%, transparent);
+}
+
+.combo-foto::after {
+  left: 18%;
+  right: 18%;
+  bottom: 0;
+  height: 12%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.6), transparent);
+}
+
 .combo-foto img {
   position: absolute;
   inset: 20px 20px 6px;
   width: calc(100% - 40px);
   height: calc(100% - 26px);
+  z-index: 1;
   object-fit: contain;
-  /* luz roja de contorno, como un foco de estadio */
-  filter: drop-shadow(0 18px 18px rgb(0 0 0 / 0.55)) drop-shadow(0 0 18px rgb(var(--rojo-rgb) / 0.45));
   transition: transform 0.6s var(--ease);
 }
 

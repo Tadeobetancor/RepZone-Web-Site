@@ -1,4 +1,4 @@
-import { cargarCatalogo, formatoPrecio } from '../datos.js';
+import { cargarCatalogo, formatoPrecio, fotoAdaptable } from '../datos.js';
 
 const flecha = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
 const PAUSA = 4500;
@@ -13,7 +13,7 @@ export async function iniciarHero() {
     .map(
       (c, i) => `
       <article class="combo" data-id="${c.id}" aria-roledescription="tarjeta" aria-label="${i + 1} de ${combos.length}">
-        <div class="combo-foto"><img src="${c.fotos[0]}" alt="" loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async"></div>
+        <div class="combo-foto"><img ${fotoAdaptable(c.fotos[0], '(min-width: 900px) 260px, 52vw')} alt="" loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async"></div>
         <div class="combo-info">
           <span class="combo-marca">${c.marca}</span>
           <h2 class="combo-nombre">${c.nombre}</h2>
@@ -31,26 +31,34 @@ export async function iniciarHero() {
   const ant = document.getElementById('carrusel-ant');
   const sig = document.getElementById('carrusel-sig');
 
-  const ir = (i) => {
-    const t = tarjetas[(i + tarjetas.length) % tarjetas.length];
-    pista.scrollTo({ left: t.offsetLeft - tarjetas[0].offsetLeft, behavior: 'smooth' });
+  // Posición de cada tarjeta: se mide una vez (y al cambiar el tamaño), no en cada cuadro del deslizamiento
+  let posiciones = [];
+  let ancho = 0;
+  let total = 0;
+  const medir = () => {
+    posiciones = tarjetas.map((t) => t.offsetLeft - tarjetas[0].offsetLeft);
+    ancho = pista.clientWidth;
+    total = pista.scrollWidth;
   };
+  medir();
+
+  const ir = (i) => pista.scrollTo({ left: posiciones[(i + tarjetas.length) % tarjetas.length], behavior: 'smooth' });
 
   // La tarjeta activa es la que quedó alineada al inicio de la pista
   const marcar = () => {
     const x = pista.scrollLeft;
     let mejor = 0;
-    tarjetas.forEach((t, i) => {
-      if (Math.abs(t.offsetLeft - tarjetas[0].offsetLeft - x) < Math.abs(tarjetas[mejor].offsetLeft - tarjetas[0].offsetLeft - x)) mejor = i;
-    });
+    posiciones.forEach((p, i) => Math.abs(p - x) < Math.abs(posiciones[mejor] - x) && (mejor = i));
     // al final de la pista la última tarjeta no llega al inicio: se marca la última
-    if (x + pista.clientWidth >= pista.scrollWidth - 4) mejor = tarjetas.length - 1;
+    const alFinal = x + ancho >= total - 4;
+    if (alFinal) mejor = tarjetas.length - 1;
+    // cada flecha se muestra solo si hay más combos hacia ese lado
+    ant.hidden = x <= 4;
+    sig.hidden = alFinal;
+    if (mejor === actual && tarjetas[mejor].classList.contains('activa')) return;
     actual = mejor;
     tarjetas.forEach((t, i) => t.classList.toggle('activa', i === mejor));
     botones.forEach((b, i) => b.setAttribute('aria-current', String(i === mejor)));
-    // cada flecha se muestra solo si hay más combos hacia ese lado
-    ant.hidden = x <= 4;
-    sig.hidden = x + pista.clientWidth >= pista.scrollWidth - 4;
   };
   let cuadro;
   pista.addEventListener('scroll', () => {
@@ -66,7 +74,9 @@ export async function iniciarHero() {
   });
   ant.addEventListener('click', () => ir(Math.max(0, actual - 1)));
   sig.addEventListener('click', () => ir(Math.min(tarjetas.length - 1, actual + 1)));
-  addEventListener('resize', marcar);
+  addEventListener('resize', () => (medir(), marcar()));
+  // las fuentes cambian el alto/ancho de las tarjetas: se vuelve a medir cuando terminan de cargar
+  document.fonts?.ready.then(() => (medir(), marcar()));
 
   // Avanza solo; se pausa mientras la persona lo toca, lo mira con el mouse o no está a la vista
   if (!document.documentElement.classList.contains('con-movimiento')) return;

@@ -28,7 +28,6 @@
   background: linear-gradient(to bottom, rgb(255 70 70 / 0.5), rgb(var(--rojo-rgb) / 0.12) 45%, transparent 78%);
   clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
   filter: blur(22px);
-  mix-blend-mode: screen;
   transform-origin: 50% 0;
   opacity: 0.55;
 }
@@ -58,7 +57,6 @@
   aspect-ratio: 2 / 1;
   translate: -50% -55%;
   background: radial-gradient(closest-side, rgb(var(--rojo-rgb) / 0.42), rgb(var(--rojo-rgb) / 0.12) 55%, transparent);
-  filter: blur(10px);
 }
 
 .con-movimiento .foco-1,

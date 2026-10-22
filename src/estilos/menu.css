@@ -16,8 +16,8 @@
     radial-gradient(60% 45% at 0% 0%, rgb(var(--rojo-rgb) / 0.28), transparent 70%),
     radial-gradient(50% 40% at 100% 100%, rgb(var(--rojo-rgb) / 0.18), transparent 70%),
     var(--vidrio-fuerte);
-  -webkit-backdrop-filter: blur(26px) saturate(140%);
-  backdrop-filter: blur(26px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 .menu-contenido {

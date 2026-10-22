@@ -61,6 +61,30 @@ ol {
   color: #fff;
 }
 
+/* Animaciones en pausa: sección fuera de pantalla (pausa.js) o tapada por el menú o un panel */
+.fuera,
+.fuera *,
+.fuera ::before,
+.fuera ::after,
+.fuera::before,
+.fuera::after,
+.menu-abierto main *,
+.menu-abierto main ::before,
+.menu-abierto main ::after,
+.menu-abierto .pie *,
+.panel-abierto main *,
+.panel-abierto main ::before,
+.panel-abierto main ::after,
+.panel-abierto .pie * {
+  animation-play-state: paused !important;
+}
+
+/* El pie se dibuja recién cuando se acerca a la pantalla */
+.pie {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 /* Utilidades */
 .sr {
   position: absolute;

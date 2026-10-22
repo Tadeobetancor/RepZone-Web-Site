@@ -8,9 +8,26 @@
   <meta name="theme-color" content="#0A0A0B">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Inter:wght@400;500;600;700&display=swap">
+  <!-- Fuentes servidas desde la propia web (solo lo que se usa): no esperan a otro servidor -->
+  <link rel="preload" as="font" type="font/woff2" href="/fuentes/archivo-italica.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="/fuentes/inter.woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Archivo';
+      font-style: italic;
+      font-weight: 800 900;
+      font-stretch: 100% 125%;
+      font-display: swap;
+      src: url('/fuentes/archivo-italica.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 400 800;
+      font-display: swap;
+      src: url('/fuentes/inter.woff2') format('woff2');
+    }
+  </style>
   <link rel="preload" as="image" href="/logo-texto.png">
   <script>
     // Antes del primer pintado: decide si hay animaciones (y con ellas, la pantalla de carga)
@@ -72,6 +89,7 @@
 
       <a class="barra-logo" id="barra-logo" href="#inicio" aria-label="RepZone, ir al inicio">
         <img src="/logo-repzone.png" alt="" width="960" height="398">
+        <span class="barra-logo-brillo" aria-hidden="true"></span>
       </a>
 
       <div class="barra-der">
@@ -99,7 +117,7 @@
     <section class="vista" id="vista" hidden></section>
 
     <!-- Hero: combos en tarjetas deslizables -->
-    <section class="hero" id="inicio" aria-labelledby="hero-titulo">
+    <section class="hero" id="inicio" aria-labelledby="hero-titulo" data-anima>
       <div class="escenario" aria-hidden="true">
         <span class="escenario-textura"></span>
         <span class="escenario-glow"></span>
@@ -128,7 +146,7 @@
     </section>
 
     <!-- Franja de envío -->
-    <div class="franja" aria-label="Envío GRATIS en todo Hurlingham. Low cost al resto de localidades.">
+    <div class="franja" data-anima aria-label="Envío GRATIS en todo Hurlingham. Low cost al resto de localidades.">
       <div class="franja-pista" aria-hidden="true">
         <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
         <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
@@ -140,7 +158,7 @@
     </div>
 
     <!-- Botones gancho -->
-    <section class="ganchos contenedor" aria-label="Combos y ofertas">
+    <section class="ganchos contenedor" aria-label="Combos y ofertas" data-anima>
       <a class="gancho gancho-grande gancho-combos" href="#combos" data-gancho>
         <span class="gancho-etiqueta" data-etiqueta="combos">Más por menos</span>
         <span class="gancho-titulo">Combos</span>
@@ -195,7 +213,7 @@
   </main>
 
   <!-- Pie de página -->
-  <footer class="pie" id="pie"></footer>
+  <footer class="pie" id="pie" data-anima></footer>
 
   <!-- Ficha de producto -->
   <div class="panel panel-ficha" id="ficha" hidden>
