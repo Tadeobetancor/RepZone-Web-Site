@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RepZone · Suplementos deportivos</title>
+  <meta name="description" content="Proteínas, creatinas, aminoácidos y más. Armá tu pedido y mandalo por WhatsApp.">
+  <meta name="theme-color" content="#0A0A0B">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="preload" as="image" href="/logo-texto.png">
+  <script>
+    // Antes del primer pintado: decide si hay animaciones (y con ellas, la pantalla de carga)
+    (function () {
+      var raiz = document.documentElement;
+      // Quien pidió "reducir movimiento" en su sistema ve la página quieta.
+      // Para revisar las animaciones igual: abrir la página con ?movimiento al final.
+      var forzar = /[?&]movimiento/.test(location.search);
+      if (!forzar && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      raiz.classList.add('con-movimiento');
+      raiz.classList.add('cargando');
+    })();
+  </script>
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <!-- Pantalla de carga: el logo se arma en el centro y viaja a la barra -->
+  <div class="cargador" id="cargador" aria-hidden="true">
+    <div class="escenario">
+      <span class="escenario-textura"></span>
+      <span class="foco foco-1"></span>
+      <span class="foco foco-2"></span>
+      <span class="foco foco-3"></span>
+      <span class="escenario-glow"></span>
+    </div>
+    <div class="cargador-logo" id="cargador-logo">
+      <img class="lv-texto" src="/logo-texto.png" alt="" width="960" height="398">
+      <div class="lv-pesa">
+        <img class="lv-pieza lv-eje" src="/logo/pesa-eje.png" alt="" width="960" height="398">
+        <img class="lv-pieza lv-barra" src="/logo/pesa-barra.png" alt="" width="960" height="398">
+        <img class="lv-pieza lv-disco" src="/logo/pesa-disco1.png" alt="" width="960" height="398">
+        <img class="lv-pieza lv-disco" src="/logo/pesa-disco2.png" alt="" width="960" height="398">
+        <img class="lv-pieza lv-disco" src="/logo/pesa-disco3.png" alt="" width="960" height="398">
+        <img class="lv-pieza lv-tope" src="/logo/pesa-tope.png" alt="" width="960" height="398">
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra flotante -->
+  <header class="barra" id="barra">
+    <div class="barra-pildora">
+      <div class="barra-izq">
+        <button class="barra-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">
+          <span class="hamburguesa" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <button class="barra-btn buscar-btn" id="buscar-btn" type="button" aria-label="Buscar">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+        <form class="buscador" id="buscador" role="search" autocomplete="off">
+          <label class="sr" for="buscar">Buscar productos o marcas</label>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="buscar" type="search" placeholder="Buscar producto o marca" enterkeyhint="search" aria-controls="buscador-panel" aria-autocomplete="list">
+          <button class="buscador-cerrar" id="buscador-cerrar" type="button" aria-label="Cerrar búsqueda">
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </form>
+      </div>
+
+      <a class="barra-logo" id="barra-logo" href="#inicio" aria-label="RepZone, ir al inicio">
+        <img src="/logo-repzone.png" alt="" width="960" height="398">
+      </a>
+
+      <div class="barra-der">
+        <button class="barra-btn carrito-btn" id="carrito-btn" type="button" aria-label="Carrito, 0 productos">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+          <span class="carrito-contador" id="carrito-contador" hidden>0</span>
+        </button>
+      </div>
+    </div>
+    <div class="buscador-panel" id="buscador-panel" role="listbox" aria-label="Resultados de búsqueda" hidden></div>
+  </header>
+
+  <!-- Menú a pantalla completa -->
+  <div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menú" hidden>
+    <div class="menu-fondo" aria-hidden="true"></div>
+    <nav class="menu-contenido" aria-label="Secciones">
+      <div class="menu-ganchos" id="menu-ganchos"></div>
+      <p class="menu-subtitulo">Categorías</p>
+      <ul class="menu-categorias" id="menu-categorias"></ul>
+    </nav>
+  </div>
+
+  <main id="contenido">
+    <!-- Vista propia de Combos u Ofertas (#combos / #ofertas) -->
+    <section class="vista" id="vista" hidden></section>
+
+    <!-- Hero: combos en tarjetas deslizables -->
+    <section class="hero" id="inicio" aria-labelledby="hero-titulo">
+      <div class="escenario" aria-hidden="true">
+        <span class="escenario-textura"></span>
+        <span class="escenario-glow"></span>
+      </div>
+      <div class="hero-grilla contenedor">
+        <div class="hero-texto">
+          <p class="etiqueta">Combos RepZone</p>
+          <h1 class="hero-titulo" id="hero-titulo">Combos que <span class="rojo">rinden más.</span></h1>
+          <p class="hero-bajada">Packs armados con precio fijo. Elegilo, sumalo al carrito y mandá tu pedido por WhatsApp.</p>
+          <div class="hero-acciones">
+            <a class="btn" href="#productos">Ver catálogo completo</a>
+          </div>
+        </div>
+
+        <div class="carrusel" id="carrusel" aria-roledescription="carrusel" aria-label="Combos destacados">
+          <div class="carrusel-pista" id="carrusel-pista"></div>
+          <button class="carrusel-flecha carrusel-flecha-ant" id="carrusel-ant" type="button" aria-label="Combo anterior" hidden>
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <button class="carrusel-flecha carrusel-flecha-sig" id="carrusel-sig" type="button" aria-label="Combo siguiente" hidden>
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <div class="carrusel-puntos" id="carrusel-puntos"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Franja de envío -->
+    <div class="franja" aria-label="Envío GRATIS en todo Hurlingham. Low cost al resto de localidades.">
+      <div class="franja-pista" aria-hidden="true">
+        <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
+        <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
+        <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
+        <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
+        <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
+        <span>Envío <b>GRATIS</b> en todo Hurlingham</span><span>Low cost al resto de localidades</span>
+      </div>
+    </div>
+
+    <!-- Botones gancho -->
+    <section class="ganchos contenedor" aria-label="Combos y ofertas">
+      <a class="gancho gancho-grande gancho-combos" href="#combos" data-gancho>
+        <span class="gancho-etiqueta" data-etiqueta="combos">Más por menos</span>
+        <span class="gancho-titulo">Combos</span>
+        <span class="gancho-bajada">Packs armados para ahorrar</span>
+        <span class="gancho-flecha"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="gancho-fotos" aria-hidden="true" data-fotos="combos"></span>
+      </a>
+      <a class="gancho gancho-grande gancho-ofertas" href="#ofertas" data-gancho>
+        <span class="gancho-etiqueta" data-etiqueta="ofertas">Ofertas flash</span>
+        <span class="gancho-titulo">Ofertas</span>
+        <span class="gancho-bajada">Precios que no duran</span>
+        <span class="gancho-flecha"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="gancho-fotos" aria-hidden="true" data-fotos="ofertas"></span>
+      </a>
+    </section>
+
+    <!-- Catálogo: filtros por categoría y grilla -->
+    <section class="catalogo" id="productos" aria-labelledby="catalogo-titulo">
+      <div class="contenedor catalogo-cabecera">
+        <p class="etiqueta">Catálogo</p>
+        <h2 class="titulo-seccion" id="catalogo-titulo">Todo para <span class="rojo">entrenar</span></h2>
+        <p class="catalogo-cuenta" id="catalogo-cuenta" aria-live="polite"></p>
+      </div>
+
+      <div class="filtros-caja">
+        <button class="filtros-flecha filtros-flecha-ant" id="filtros-ant" type="button" aria-label="Ver categorías anteriores" hidden>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="filtros" id="filtros" role="toolbar" aria-label="Filtrar por categoría"></div>
+        <button class="filtros-flecha filtros-flecha-sig" id="filtros-sig" type="button" aria-label="Ver más categorías" hidden>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <div class="contenedor">
+        <div class="catalogo-busqueda" id="catalogo-busqueda" hidden>
+          <p>Resultados para <b id="catalogo-busqueda-texto"></b></p>
+          <button class="catalogo-busqueda-borrar" id="catalogo-busqueda-borrar" type="button">Borrar búsqueda</button>
+        </div>
+        <ul class="grilla" id="grilla"></ul>
+        <div class="grilla-vacia" id="grilla-vacia" hidden>
+          <p>No encontramos productos con esa búsqueda.</p>
+          <p>Probá con otra marca o con el nombre del producto, o escribinos y te ayudamos.</p>
+          <a class="btn" data-whatsapp href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+        </div>
+        <div class="grilla-mas">
+          <button class="btn btn-claro" id="grilla-mas" type="button" hidden>Ver más productos</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Pie de página -->
+  <footer class="pie" id="pie"></footer>
+
+  <!-- Ficha de producto -->
+  <div class="panel panel-ficha" id="ficha" hidden>
+    <div class="panel-fondo" data-cerrar aria-hidden="true"></div>
+    <section class="panel-hoja" role="dialog" aria-modal="true" aria-labelledby="ficha-nombre" tabindex="-1" data-foco>
+      <button class="panel-cerrar" type="button" data-cerrar aria-label="Cerrar">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+      <div class="panel-cuerpo" id="ficha-cuerpo"></div>
+      <div class="panel-pie ficha-pie" id="ficha-pie"></div>
+    </section>
+  </div>
+
+  <!-- Carrito -->
+  <div class="panel panel-carrito" id="carrito" hidden>
+    <div class="panel-fondo" data-cerrar aria-hidden="true"></div>
+    <section class="panel-hoja" role="dialog" aria-modal="true" aria-labelledby="carrito-titulo" tabindex="-1" data-foco>
+      <header class="carrito-cabecera">
+        <h2 class="carrito-titulo" id="carrito-titulo">Tu pedido</h2>
+        <span class="carrito-cuenta" id="carrito-cuenta"></span>
+        <button class="panel-cerrar" type="button" data-cerrar aria-label="Cerrar carrito">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+      <div class="panel-cuerpo" id="carrito-cuerpo"></div>
+      <div class="panel-pie carrito-pie" id="carrito-pie" hidden></div>
+    </section>
+  </div>
+
+  <!-- WhatsApp flotante -->
+  <a class="wa-fab" data-whatsapp href="#" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
+    <span class="wa-fab-texto">¿Dudas? Escribinos</span>
+    <span class="wa-fab-boton">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.27-.2-.57-.34m-5.42 7.4h-.01a9.87 9.87 0 0 1-5.03-1.37l-.36-.22-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.17-3.48-8.41"/></svg>
+    </span>
+  </a>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

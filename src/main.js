@@ -1,0 +1,37 @@
+import './estilos/tokens.css';
+import './estilos/base.css';
+import './estilos/cargador.css';
+import './estilos/barra.css';
+import './estilos/menu.css';
+import './estilos/ganchos.css';
+import './estilos/hero.css';
+import './estilos/catalogo.css';
+import './estilos/panel.css';
+import './estilos/pie.css';
+import './estilos/whatsapp.css';
+
+import { iniciarCargador } from './ui/cargador.js';
+import { iniciarWhatsApp } from './ui/whatsapp-fab.js';
+import { iniciarMenu } from './ui/menu.js';
+import { iniciarBuscador } from './ui/buscador.js';
+import { iniciarHero } from './ui/hero.js';
+import { iniciarGanchos } from './ui/ganchos.js';
+import { iniciarFranja } from './ui/franja.js';
+import { iniciarVista } from './ui/vista.js';
+import { iniciarGrilla } from './ui/grilla.js';
+import { iniciarPie } from './ui/pie.js';
+import { iniciarFicha } from './ui/ficha.js';
+import { iniciarCarrito } from './ui/carrito-panel.js';
+
+iniciarCargador();
+iniciarWhatsApp();
+iniciarMenu();
+iniciarBuscador();
+iniciarHero();
+iniciarGanchos();
+iniciarFranja();
+iniciarVista();
+iniciarGrilla();
+iniciarPie();
+iniciarFicha();
+iniciarCarrito();

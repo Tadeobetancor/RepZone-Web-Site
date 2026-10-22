@@ -1,0 +1,120 @@
+/* Botón flotante de WhatsApp */
+.wa-fab {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wa-fab-boton {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--rojo);
+  box-shadow:
+    0 5px 0 var(--rojo-profundo),
+    0 14px 30px -6px rgb(var(--rojo-rgb) / 0.6);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+/* Anillo de vidrio que late */
+.wa-fab-boton::before,
+.wa-fab-boton::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.wa-fab-boton::before {
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: rgb(255 255 255 / 0.06);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  -webkit-mask: radial-gradient(circle, transparent 30px, #000 30.5px);
+  mask: radial-gradient(circle, transparent 30px, #000 30.5px);
+}
+
+.wa-fab-boton::after {
+  border: 2px solid rgb(var(--rojo-rgb) / 0.8);
+  opacity: 0;
+}
+
+.con-movimiento .wa-fab-boton::after {
+  animation: wa-latido 3.2s 2s ease-out infinite;
+}
+
+.wa-fab svg {
+  width: 28px;
+  height: 28px;
+  fill: #fff;
+}
+
+.wa-fab:hover .wa-fab-boton {
+  transform: translateY(-3px) rotate(-6deg);
+  box-shadow:
+    0 8px 0 var(--rojo-profundo),
+    0 20px 40px -6px rgb(var(--rojo-rgb) / 0.75);
+}
+
+.wa-fab:active .wa-fab-boton {
+  transform: translateY(4px);
+  box-shadow:
+    0 1px 0 var(--rojo-profundo),
+    0 6px 14px -6px rgb(var(--rojo-rgb) / 0.6);
+}
+
+/* el texto flota a la izquierda sin ocupar lugar: solo el círculo recibe los toques */
+.wa-fab-texto {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  margin-top: -20px;
+  padding: 10px 16px;
+  border: 1px solid var(--vidrio-borde);
+  border-radius: 999px;
+  background: var(--vidrio);
+  -webkit-backdrop-filter: var(--vidrio-blur);
+  backdrop-filter: var(--vidrio-blur);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(12px);
+  transition: opacity 0.25s, transform 0.35s var(--ease);
+  pointer-events: none;
+  line-height: 20px;
+}
+
+@media (hover: hover) {
+  .wa-fab:hover .wa-fab-texto,
+  .wa-fab:focus-visible .wa-fab-texto {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Mientras el menú está abierto queda por encima, pero sin texto */
+.menu-abierto .wa-fab-texto {
+  display: none;
+}
+
+@keyframes wa-latido {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.85);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}

@@ -1,0 +1,143 @@
+/* Escenario: fondo de la arena (focos, glow y textura RZ). Lo usan la carga y el hero. */
+.escenario,
+.escenario > span {
+  position: absolute;
+  pointer-events: none;
+}
+
+.escenario {
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.escenario-textura {
+  inset: 0;
+  background: url('/textura-rz.png') 0 0 / 200px auto repeat;
+  opacity: 0.045;
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 80%);
+  mask-image: radial-gradient(70% 60% at 50% 45%, #000 20%, transparent 80%);
+}
+
+.foco {
+  top: -12%;
+  left: 50%;
+  width: clamp(180px, 34vw, 520px);
+  height: 125%;
+  margin-left: calc(clamp(180px, 34vw, 520px) / -2);
+  background: linear-gradient(to bottom, rgb(255 70 70 / 0.5), rgb(var(--rojo-rgb) / 0.12) 45%, transparent 78%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  filter: blur(22px);
+  mix-blend-mode: screen;
+  transform-origin: 50% 0;
+  opacity: 0.55;
+}
+
+.foco-1 {
+  --giro: -24deg;
+  translate: -28vw 0;
+  transform: rotate(var(--giro));
+}
+
+.foco-2 {
+  --giro: 0deg;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.26), rgb(255 255 255 / 0.04) 50%, transparent 80%);
+  opacity: 0.5;
+}
+
+.foco-3 {
+  --giro: 24deg;
+  translate: 28vw 0;
+  transform: rotate(var(--giro));
+}
+
+.escenario-glow {
+  top: 50%;
+  left: 50%;
+  width: min(120vw, 1100px);
+  aspect-ratio: 2 / 1;
+  translate: -50% -55%;
+  background: radial-gradient(closest-side, rgb(var(--rojo-rgb) / 0.42), rgb(var(--rojo-rgb) / 0.12) 55%, transparent);
+  filter: blur(10px);
+}
+
+.con-movimiento .foco-1,
+.con-movimiento .foco-3 {
+  animation: foco-vaiven 9s ease-in-out infinite alternate;
+}
+
+.con-movimiento .foco-3 {
+  animation-delay: -4.5s;
+}
+
+.con-movimiento .foco-2 {
+  animation: foco-titila 6s ease-in-out infinite;
+}
+
+.con-movimiento .escenario-glow {
+  animation: respira 4.5s ease-in-out infinite;
+}
+
+@keyframes foco-vaiven {
+  to {
+    transform: rotate(calc(var(--giro) * 0.55));
+  }
+}
+
+@keyframes foco-titila {
+  50% {
+    opacity: 0.32;
+  }
+}
+
+@keyframes respira {
+  50% {
+    opacity: 0.6;
+    scale: 0.92;
+  }
+}
+
+/* Pantalla de carga */
+.cargador {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: none;
+  place-items: center;
+  background: var(--negro);
+  cursor: pointer;
+}
+
+.cargando .cargador {
+  display: grid;
+}
+
+html.cargando {
+  overflow: hidden;
+}
+
+/* Mientras carga, el logo de la barra lo dibuja el logo que viaja */
+.cargando .barra-logo img {
+  opacity: 0;
+}
+
+.cargador-logo {
+  position: relative;
+  width: min(84vw, 720px);
+  aspect-ratio: 960 / 398;
+}
+
+.cargador-logo > *,
+.lv-pieza {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Arrancan ocultos: los muestra la animación (cargador.js) */
+.lv-texto,
+.lv-pieza {
+  opacity: 0;
+}
+

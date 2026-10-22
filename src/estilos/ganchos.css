@@ -1,0 +1,466 @@
+/* Tarjetas gancho: Combos y Ofertas (menú y página) */
+.gancho {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'etiqueta etiqueta'
+    'titulo flecha'
+    'bajada flecha';
+  align-items: end;
+  gap: 6px 12px;
+  min-height: 132px;
+  padding: 16px 16px 18px 20px;
+  border-radius: 22px;
+  background: var(--fondo);
+  color: var(--tinta);
+  box-shadow: 0 6px 0 var(--sombra), 0 22px 44px -14px var(--brillo);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 640px) {
+  .gancho {
+    min-height: 190px;
+    padding: 22px 22px 24px 26px;
+  }
+}
+
+.gancho-combos {
+  --fondo: linear-gradient(135deg, #ff3238 0%, #dc1018 55%, #a90910 100%);
+  --sombra: var(--rojo-profundo);
+  --brillo: rgb(var(--rojo-rgb) / 0.7);
+  --tinta: #fff;
+}
+
+.gancho-ofertas {
+  --fondo: linear-gradient(135deg, #ffffff 0%, #ececef 100%);
+  --sombra: #85858d;
+  --brillo: rgb(255 255 255 / 0.28);
+  --tinta: var(--negro);
+}
+
+/* Ícono grande de fondo: capas (combo) y rayo (oferta) */
+.gancho::before {
+  content: '';
+  position: absolute;
+  right: 56px;
+  bottom: -26px;
+  z-index: -1;
+  width: 150px;
+  height: 150px;
+  background: currentColor;
+  opacity: 0.13;
+  transform: rotate(-12deg);
+  -webkit-mask: var(--icono) center / contain no-repeat;
+  mask: var(--icono) center / contain no-repeat;
+}
+
+.gancho-combos::before {
+  --icono: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 2 7l10 5 10-5-10-5zM3.4 11.3 2 12l10 5 10-5-1.4-.7L12 14.6l-8.6-3.3zm0 5L2 17l10 5 10-5-1.4-.7L12 19.6l-8.6-3.3z'/%3E%3C/svg%3E");
+}
+
+.gancho-ofertas::before {
+  --icono: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 10-12h-7l1-8z'/%3E%3C/svg%3E");
+  background: var(--rojo);
+  opacity: 0.2;
+}
+
+/* Brillo que cruza la tarjeta cada tanto */
+.gancho::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -50%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+
+.con-movimiento .gancho::after {
+  animation: gancho-brillo 4s 1s ease-in-out infinite;
+}
+
+.con-movimiento .gancho-ofertas::after {
+  background: linear-gradient(100deg, transparent, rgb(var(--rojo-rgb) / 0.25), transparent);
+  animation-delay: 3s;
+}
+
+@keyframes gancho-brillo {
+  0% {
+    translate: 0;
+  }
+  35%,
+  100% {
+    translate: 500%;
+  }
+}
+
+.gancho-etiqueta {
+  grid-area: etiqueta;
+  justify-self: start;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font: 800 0.68rem/1 var(--fuente);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.gancho-combos .gancho-etiqueta {
+  background: #fff;
+  color: var(--rojo);
+}
+
+.gancho-ofertas .gancho-etiqueta {
+  background: var(--rojo);
+  color: #fff;
+}
+
+/* Punto que late: "está pasando ahora" */
+.gancho-etiqueta::before {
+  content: '';
+  flex: none;
+  width: 13px;
+  height: 13px;
+  background: currentColor;
+  -webkit-mask: var(--icono-etiqueta) center / contain no-repeat;
+  mask: var(--icono-etiqueta) center / contain no-repeat;
+}
+
+/* combos: etiqueta de precio · ofertas: rayo */
+.gancho-combos .gancho-etiqueta,
+.vista-combos .gancho-etiqueta {
+  --icono-etiqueta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 12.6V4a1 1 0 0 1 1-1h8.6a1 1 0 0 1 .7.3l7.4 7.4a1 1 0 0 1 0 1.4l-8.6 8.6a1 1 0 0 1-1.4 0l-7.4-7.4a1 1 0 0 1-.3-.7zM7.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z'/%3E%3C/svg%3E");
+}
+
+.gancho-ofertas .gancho-etiqueta,
+.vista-ofertas .gancho-etiqueta {
+  --icono-etiqueta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 3 14h7l-1 8 10-12h-7l1-8z'/%3E%3C/svg%3E");
+}
+
+.con-movimiento .gancho-ofertas .gancho-etiqueta::before,
+.con-movimiento .vista-ofertas .gancho-etiqueta::before {
+  animation: punto-vivo 1.4s ease-in-out infinite;
+}
+
+.gancho-grande .gancho-etiqueta {
+  padding: 8px 13px;
+  font-size: 0.78rem;
+}
+
+@keyframes punto-vivo {
+  50% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+}
+
+.gancho-titulo {
+  grid-area: titulo;
+  font: italic 900 clamp(2.3rem, 11vw, 3.6rem) / 0.95 var(--fuente-display);
+  font-stretch: 125%;
+  text-transform: uppercase;
+}
+
+/* Contraste: sombra dura como la de los botones, más una suave que lo separa del fondo */
+.gancho-combos .gancho-titulo {
+  text-shadow: 0 4px 0 var(--rojo-profundo), 0 12px 26px rgb(0 0 0 / 0.4);
+}
+
+.gancho-ofertas .gancho-titulo {
+  text-shadow: 3px 4px 0 rgb(var(--rojo-rgb) / 0.85), 0 12px 24px rgb(0 0 0 / 0.18);
+}
+
+.gancho-combos .gancho-bajada {
+  text-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+}
+
+.gancho-ofertas .gancho-bajada {
+  text-shadow: 0 1px 0 #fff;
+}
+
+.gancho-bajada {
+  grid-area: bajada;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.82;
+}
+
+.gancho-flecha {
+  grid-area: flecha;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  transition: transform 0.25s var(--ease);
+}
+
+.gancho-combos .gancho-flecha {
+  background: rgb(0 0 0 / 0.2);
+}
+
+.gancho-ofertas .gancho-flecha {
+  background: var(--rojo);
+  color: #fff;
+}
+
+/* Al pasar el mouse: el botón se hunde, como apretado */
+.gancho:hover {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 var(--sombra), 0 14px 30px -14px var(--brillo);
+}
+
+.gancho:hover .gancho-flecha,
+.gancho:focus-visible .gancho-flecha {
+  transform: translateX(4px);
+}
+
+.gancho:active {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 var(--sombra), 0 8px 16px -8px var(--brillo);
+  transition-duration: 0.06s;
+}
+
+
+/* Versión grande, en la página: lo más llamativo del sitio */
+.ganchos {
+  display: grid;
+  gap: 18px;
+  padding-block: clamp(36px, 7vw, 64px) 8px;
+}
+
+@media (min-width: 768px) {
+  .ganchos {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+.gancho-grande {
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 236px;
+  padding: 20px 20px 22px 24px;
+  border-radius: 28px;
+}
+
+@media (min-width: 768px) {
+  .gancho-grande {
+    min-height: 300px;
+    padding: 28px 28px 30px 32px;
+  }
+}
+
+.gancho-grande .gancho-titulo {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(2.7rem, 12vw, 5rem);
+}
+
+.gancho-grande .gancho-etiqueta,
+.gancho-grande .gancho-bajada,
+.gancho-grande .gancho-flecha {
+  position: relative;
+  z-index: 1;
+}
+
+.gancho-grande .gancho-bajada {
+  font-size: 1rem;
+}
+
+.gancho-grande .gancho-flecha {
+  width: 56px;
+  height: 56px;
+}
+
+/* El ícono de fondo deja lugar a las fotos */
+.gancho-grande::before {
+  display: none;
+}
+
+/* Productos flotando a la derecha (fijos: no siguen al mouse) */
+.gancho-fotos {
+  position: absolute;
+  right: 4%;
+  top: 6%;
+  z-index: 0;
+  width: 44%;
+  height: 56%;
+  pointer-events: none;
+}
+
+.gancho-fotos img {
+  position: absolute;
+  bottom: 0;
+  height: 82%;
+  width: auto;
+  max-width: 70%;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 16px rgb(0 0 0 / 0.45));
+}
+
+.gancho-fotos img:nth-child(1) {
+  right: 30%;
+  height: 70%;
+  rotate: -10deg;
+}
+
+.gancho-fotos img:nth-child(2) {
+  right: 0;
+  z-index: 1;
+  rotate: 6deg;
+}
+
+/* una sola foto (combos): centrada y más grande */
+.gancho-fotos img:only-child {
+  right: 8%;
+  height: 100%;
+  max-width: 92%;
+  rotate: 4deg;
+}
+
+.gancho-fotos img:nth-child(3) {
+  right: 46%;
+  bottom: 30%;
+  height: 46%;
+  rotate: -18deg;
+  opacity: 0.9;
+}
+
+/* Holograma: los productos levitan girando apenas en 3D sobre un anillo de luz,
+   y una línea de escaneo los recorre cada tanto */
+.gancho-fotos {
+  --holo: 255 255 255;
+  perspective: 700px;
+}
+
+.gancho-ofertas .gancho-fotos {
+  --holo: var(--rojo-rgb);
+}
+
+/* anillo de luz debajo */
+.gancho-fotos::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 6%;
+  bottom: -4%;
+  z-index: -1;
+  height: 14%;
+  border: 2px solid rgb(var(--holo) / 0.75);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgb(var(--holo) / 0.55), inset 0 0 14px rgb(var(--holo) / 0.4);
+  opacity: 0.6;
+}
+
+/* línea de escaneo */
+.gancho-fotos::before {
+  content: '';
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  top: 0;
+  z-index: 2;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(var(--holo)), transparent);
+  box-shadow: 0 0 12px 2px rgb(var(--holo) / 0.7);
+  opacity: 0;
+}
+
+.con-movimiento .gancho-fotos img {
+  animation: levitar 6s ease-in-out infinite;
+}
+
+.con-movimiento .gancho-fotos img:nth-child(2) {
+  animation-delay: -2s;
+}
+
+.con-movimiento /* una sola foto (combos): centrada y más grande */
+.gancho-fotos img:only-child {
+  right: 8%;
+  height: 100%;
+  max-width: 92%;
+  rotate: 4deg;
+}
+
+.gancho-fotos img:nth-child(3) {
+  animation-delay: -4s;
+}
+
+.con-movimiento .gancho-fotos::after {
+  animation: anillo 3s ease-in-out infinite;
+}
+
+.con-movimiento .gancho-fotos::before {
+  animation: escaneo 4.2s 1s ease-in-out infinite;
+}
+
+@keyframes levitar {
+  0%,
+  100% {
+    transform: translateY(0) rotateY(-9deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateY(9deg);
+  }
+}
+
+@keyframes anillo {
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes escaneo {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  45% {
+    top: 100%;
+    opacity: 1;
+  }
+  52%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* Pulso suave del brillo exterior: "tocame" */
+.con-movimiento .gancho-grande.gancho-combos {
+  animation: pulso-rojo 3.2s ease-in-out infinite;
+}
+
+.con-movimiento .gancho-grande.gancho-ofertas {
+  animation: pulso-blanco 3.2s 1.6s ease-in-out infinite;
+}
+
+.gancho-grande:hover,
+.gancho-grande:active {
+  animation-play-state: paused;
+}
+
+@keyframes pulso-rojo {
+  50% {
+    box-shadow: 0 6px 0 var(--sombra), 0 22px 64px -6px rgb(var(--rojo-rgb) / 0.9);
+  }
+}
+
+@keyframes pulso-blanco {
+  50% {
+    box-shadow: 0 6px 0 var(--sombra), 0 22px 64px -10px rgb(255 255 255 / 0.45);
+  }
+}

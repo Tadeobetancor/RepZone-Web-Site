@@ -1,0 +1,397 @@
+/* ---------- Vistas de Combos y Ofertas ---------- */
+.en-vista #contenido > :not(.vista) {
+  display: none;
+}
+
+.vista[hidden] {
+  display: none;
+}
+
+.vista-cabecera {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: calc(var(--barra-top) + var(--barra-alto) + 22px) 0 26px;
+}
+
+.vista-combos .vista-cabecera {
+  background: linear-gradient(160deg, #ff3238 0%, #c90d15 60%, #7d070d 100%);
+}
+
+.vista-ofertas .vista-cabecera {
+  background: linear-gradient(160deg, #ffffff 0%, #e4e4e9 100%);
+  color: var(--negro);
+}
+
+.vista-cabecera .escenario-glow {
+  opacity: 0.5;
+}
+
+.vista-ofertas .escenario-textura {
+  filter: invert(1);
+}
+
+.vista-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  margin-bottom: 18px;
+  padding: 0 14px 0 10px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.22);
+  color: inherit;
+  font-weight: 700;
+  transition: background-color 0.2s;
+}
+
+.vista-volver .icono {
+  width: 18px;
+  height: 18px;
+}
+
+.vista-volver:hover {
+  background: rgb(0 0 0 / 0.35);
+}
+
+.vista-ofertas .vista-volver {
+  background: rgb(0 0 0 / 0.07);
+}
+
+.vista-etiqueta {
+  display: inline-flex;
+  margin-bottom: 10px;
+}
+
+.vista-combos .vista-etiqueta {
+  background: #fff;
+  color: var(--rojo);
+}
+
+.vista-ofertas .vista-etiqueta {
+  background: var(--rojo);
+  color: #fff;
+}
+
+.vista-titulo {
+  margin: 0;
+  font: italic 900 clamp(3.2rem, 15vw, 7rem) / 0.9 var(--fuente-display);
+  font-stretch: 125%;
+  text-transform: uppercase;
+}
+
+.vista-combos .vista-titulo {
+  text-shadow: 0 5px 0 var(--rojo-profundo), 0 14px 30px rgb(0 0 0 / 0.4);
+}
+
+.vista-ofertas .vista-titulo {
+  text-shadow: 4px 5px 0 rgb(var(--rojo-rgb) / 0.85);
+}
+
+.vista-bajada {
+  max-width: 46ch;
+  margin: 12px 0 18px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.vista-ordenes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.vista-ordenes > span {
+  margin-right: 6px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.vista-ordenes .filtro {
+  min-height: 38px;
+  font-size: 0.78rem;
+}
+
+.vista-ofertas .vista-ordenes .filtro:not([aria-pressed='true']) {
+  border-color: rgb(0 0 0 / 0.15);
+  background: rgb(255 255 255 / 0.7);
+  color: var(--negro);
+}
+
+.vista-combos .vista-ordenes .filtro[aria-pressed='true'] {
+  border-color: #fff;
+  background: #fff;
+  color: var(--rojo);
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.25);
+}
+
+.vista-cuerpo {
+  padding-block: 28px clamp(40px, 8vw, 80px);
+}
+
+.vista-vacia {
+  padding: 40px 0;
+  color: var(--gris);
+  text-align: center;
+}
+
+.vista-pie {
+  display: flex;
+  justify-content: center;
+  margin-top: 36px;
+}
+
+.producto-ahorro {
+  margin: 2px 0 0;
+  color: #4ade80;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ---------- Pie de página ---------- */
+.pie {
+  position: relative;
+  border-top: 1px solid var(--vidrio-borde);
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgb(var(--rojo-rgb) / 0.14), transparent 70%),
+    var(--negro-2);
+}
+
+.clientes {
+  padding-top: clamp(48px, 8vw, 80px);
+}
+
+/* El botón de Instagram va debajo de las fotos */
+.clientes-accion {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  padding-inline: var(--gutter);
+}
+
+.clientes-ig {
+  min-height: 46px;
+  font-size: 0.8rem;
+}
+
+.clientes-ig .icono {
+  width: 20px;
+  height: 20px;
+}
+
+/* Fotos de clientes: una tira que corre sola, despacio */
+.clientes-carrusel {
+  overflow: hidden;
+  margin-top: 4px;
+  padding-block: 10px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.clientes-pista {
+  display: flex;
+  width: max-content;
+}
+
+.clientes-tramo {
+  display: flex;
+  gap: 16px;
+  padding: 8px 16px 8px 0;
+}
+
+.con-movimiento .clientes-pista {
+  animation: franja-corre 70s linear infinite;
+}
+
+.clientes-carrusel:hover .clientes-pista {
+  animation-play-state: paused;
+}
+
+/* Foto con marco: borde claro fino, luz roja detrás y estrellas tipo reseña abajo */
+.cliente {
+  position: relative;
+  flex: none;
+  width: clamp(160px, 42vw, 230px);
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  padding: 6px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.06) 40%, rgb(var(--rojo-rgb) / 0.5));
+  box-shadow: 0 22px 34px -20px rgb(0 0 0 / 0.95), 0 10px 40px -18px rgb(var(--rojo-rgb) / 0.55);
+  transition: transform 0.35s var(--ease);
+}
+
+.cliente:nth-child(odd) {
+  rotate: -2deg;
+}
+
+.cliente:nth-child(even) {
+  rotate: 2deg;
+  translate: 0 8px;
+}
+
+.cliente:hover {
+  transform: scale(1.04);
+}
+
+.cliente img {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.cliente figcaption {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  display: grid;
+  gap: 2px;
+  padding: 22px 12px 10px;
+  border-radius: 0 0 18px 18px;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.85), transparent);
+  font: italic 800 0.72rem/1 var(--fuente-display);
+  font-stretch: 110%;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cliente-estrellas {
+  color: #ffc83d;
+  font-size: 1rem;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 8px rgb(255 200 61 / 0.55);
+}
+
+.cliente-vacio {
+  padding: 0;
+  background: var(--negro-3);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  border-style: dashed;
+  border-color: rgb(255 255 255 / 0.16);
+  color: var(--gris);
+  font: italic 800 0.95rem/1.1 var(--fuente-display);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cliente-vacio .icono {
+  width: 34px;
+  height: 34px;
+  color: var(--rojo-vivo);
+}
+
+.cliente-vacio.tono-1 {
+  background: radial-gradient(80% 60% at 50% 30%, rgb(var(--rojo-rgb) / 0.25), var(--negro-3));
+}
+
+.cliente-vacio.tono-2 {
+  background: linear-gradient(160deg, #26262b, #141416);
+}
+
+/* Cuerpo del pie: logo y categorías en una sola franja liviana */
+.pie-cuerpo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 40px;
+  padding-block: 32px 26px;
+}
+
+.pie-logo {
+  width: 110px;
+  height: auto;
+}
+
+.pie-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 0.88rem;
+}
+
+.pie-links a {
+  color: var(--gris);
+  transition: color 0.2s;
+}
+
+.pie-links a:hover {
+  color: var(--blanco);
+}
+
+/* Barra final: legal a la izquierda, crédito del diseño a la derecha (en celular, uno debajo del otro) */
+.pie-final {
+  border-top: 1px solid var(--vidrio-borde);
+  padding-block: 16px calc(18px + env(safe-area-inset-bottom));
+  color: var(--gris-2);
+  font-size: 0.78rem;
+}
+
+.pie-final-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  /* en celular deja libre el lugar del botón de WhatsApp */
+  padding-right: 76px;
+}
+
+@media (min-width: 700px) {
+  .pie-final-fila {
+    padding-right: 72px;
+  }
+}
+
+.pie-legal {
+  margin: 0;
+}
+
+.desdecero {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.desdecero-rotulo,
+.desdecero-logo,
+.desdecero-ig {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.desdecero-logo:hover,
+.desdecero-ig:hover {
+  opacity: 1;
+}
+
+.desdecero-logo {
+  display: block;
+}
+
+.desdecero-rotulo {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.desdecero img {
+  width: 46px;
+  height: auto;
+}
+
+.desdecero-ig {
+  padding-left: 8px;
+  border-left: 1px solid rgb(255 255 255 / 0.18);
+  color: var(--gris);
+  font-weight: 600;
+}

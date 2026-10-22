@@ -1,0 +1,30 @@
+# Publicación en Netlify: compila con Vite y sirve la carpeta dist
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Código y estilos con nombre único por versión: se guardan en caché un año
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/productos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# El catálogo de respaldo siempre se pide de nuevo, para que un cambio se vea enseguida
+[[headers]]
+  for = "/catalogo.csv"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

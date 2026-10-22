@@ -1,0 +1,43 @@
+:root {
+  color-scheme: dark;
+
+  /* Colores */
+  --negro: #0a0a0b;
+  --negro-2: #141416;
+  --negro-3: #1d1d21;
+  --rojo: #e3141b;
+  --rojo-vivo: #ff2a2f;
+  --rojo-profundo: #8e0a12;
+  --rojo-rgb: 227 20 27;
+  --blanco: #f5f5f5;
+  --gris: #a6a6ad;
+  --gris-2: #6b6b73;
+
+  /* Vidrio esmerilado */
+  --vidrio: rgb(18 18 21 / 0.58);
+  --vidrio-fuerte: rgb(12 12 14 / 0.84);
+  --vidrio-borde: rgb(255 255 255 / 0.09);
+  --vidrio-blur: blur(18px) saturate(160%);
+
+  /* Tipografía */
+  --fuente: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fuente-display: 'Archivo', 'Arial Black', system-ui, sans-serif;
+
+  /* Forma y movimiento */
+  --radio: 16px;
+  --radio-l: 28px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Barra */
+  --barra-top: max(12px, env(safe-area-inset-top));
+  --barra-alto: 58px;
+  --gutter: 16px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --barra-alto: 64px;
+    --gutter: 32px;
+  }
+}

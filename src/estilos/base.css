@@ -1,0 +1,164 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+  scroll-padding-top: calc(var(--barra-top) + var(--barra-alto) + 16px);
+}
+
+body {
+  margin: 0;
+  background: var(--negro);
+  color: var(--blanco);
+  font: 400 1rem/1.55 var(--fuente);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--rojo-vivo);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+::selection {
+  background: var(--rojo);
+  color: #fff;
+}
+
+/* Utilidades */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.saltar {
+  position: fixed;
+  left: 16px;
+  top: -100px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--rojo);
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.saltar:focus {
+  top: 16px;
+}
+
+.contenedor {
+  width: min(100% - 2 * var(--gutter), 1200px);
+  margin-inline: auto;
+}
+
+.icono {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rojo {
+  color: var(--rojo);
+}
+
+.etiqueta {
+  margin: 0 0 12px;
+  color: var(--rojo);
+  font: italic 800 0.8rem/1 var(--fuente-display);
+  font-stretch: 112%;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.titulo-display {
+  margin: 0;
+  font: italic 900 clamp(2.6rem, 9vw, 6rem) / 0.92 var(--fuente-display);
+  font-stretch: 125%;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* Botón sólido con sombra dura (referencia Apocalypse) */
+.btn {
+  --fondo: var(--rojo);
+  --sombra: var(--rojo-profundo);
+  --brillo: rgb(var(--rojo-rgb) / 0.55);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  min-height: 52px;
+  padding: 0.95em 1.6em;
+  border-radius: 14px;
+  background: var(--fondo);
+  color: #fff;
+  font: italic 900 1rem/1 var(--fuente-display);
+  font-stretch: 118%;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 0 var(--sombra), 0 16px 34px -10px var(--brillo);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 var(--sombra), 0 22px 44px -10px var(--brillo);
+}
+
+.btn:active {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 var(--sombra), 0 6px 14px -6px var(--brillo);
+  transition-duration: 0.06s;
+}
+
+.btn-claro {
+  --fondo: var(--blanco);
+  --sombra: #77777f;
+  --brillo: rgb(255 255 255 / 0.18);
+  color: var(--negro);
+}

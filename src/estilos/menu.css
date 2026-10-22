@@ -1,0 +1,133 @@
+/* Menú a pantalla completa */
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menu-fondo {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 45% at 0% 0%, rgb(var(--rojo-rgb) / 0.28), transparent 70%),
+    radial-gradient(50% 40% at 100% 100%, rgb(var(--rojo-rgb) / 0.18), transparent 70%),
+    var(--vidrio-fuerte);
+  -webkit-backdrop-filter: blur(26px) saturate(140%);
+  backdrop-filter: blur(26px) saturate(140%);
+}
+
+.menu-contenido {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding:
+    calc(var(--barra-top) + var(--barra-alto) + 28px)
+    max(var(--gutter), (100% - 1100px) / 2)
+    calc(96px + env(safe-area-inset-bottom));
+}
+
+/* Ganchos: Combos y Ofertas */
+.menu-ganchos {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .menu-ganchos {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+/* Categorías */
+.menu-subtitulo {
+  margin: clamp(28px, 5vh, 44px) 0 14px;
+  color: var(--gris);
+  font: italic 800 0.78rem/1 var(--fuente-display);
+  font-stretch: 112%;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.menu-categorias {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .menu-categorias {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+}
+
+.menu-cat-todos {
+  grid-column: 1 / -1;
+}
+
+.menu-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 100%;
+  min-height: 56px;
+  padding: 12px 14px 12px 16px;
+  border: 1px solid var(--vidrio-borde);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.045);
+  color: var(--blanco);
+  font: italic 800 0.86rem/1.15 var(--fuente-display);
+  font-stretch: 105%;
+  text-transform: uppercase;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    color 0.2s,
+    text-shadow 0.2s,
+    transform 0.2s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-cat-todos .menu-cat {
+  background: rgb(255 255 255 / 0.09);
+}
+
+.menu-cat .icono {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--gris-2);
+  transition: color 0.2s, transform 0.25s var(--ease);
+}
+
+/* Al pasar o tocar: se enciende en rojo y el texto se "sombrea" */
+.menu-cat:hover,
+.menu-cat:focus-visible,
+.menu-cat:active {
+  border-color: rgb(var(--rojo-rgb) / 0.65);
+  background: rgb(var(--rojo-rgb) / 0.14);
+  color: rgb(255 255 255 / 0.82);
+  text-shadow: 0 0 16px rgb(var(--rojo-rgb) / 0.9);
+}
+
+.menu-cat:hover .icono,
+.menu-cat:focus-visible .icono,
+.menu-cat:active .icono {
+  color: var(--rojo-vivo);
+  transform: translateX(3px);
+}
+
+.menu-cat:active {
+  transform: scale(0.97);
+}
+
+html.menu-abierto {
+  overflow: hidden;
+}
