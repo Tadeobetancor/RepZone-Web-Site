@@ -34,8 +34,10 @@
 .zoom-img {
   position: relative;
   width: auto;
-  max-width: min(100%, 900px);
-  max-height: 100%;
+  height: auto;
+  /* medida tomada de la pantalla: entra siempre completa, aunque la foto sea alta */
+  max-width: min(84vw, 560px);
+  max-height: 70svh;
   object-fit: contain;
   cursor: zoom-in;
   touch-action: none;
