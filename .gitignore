@@ -8,6 +8,8 @@ dist
 /referencias/
 /pagina en html/
 /pagina vieja de repzone/
+/fotos ruleta/
+/fotos productos/
 
 # Miniaturas: se generan solas al compilar (scripts/miniaturas.mjs)
 /public/productos/400/

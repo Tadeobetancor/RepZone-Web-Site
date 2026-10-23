@@ -1,7 +1,8 @@
 import { RULETA } from '../config.js';
 import { ruleta } from '../carrito.js';
-import { formatoPrecio } from '../datos.js';
+import { formatoPrecio, fotoGrande } from '../datos.js';
 import { panelAbierto } from './panel.js';
+import { abrirZoom } from './zoom.js';
 
 // Ruleta del carrito: se abre sobre el carrito, se suma el giro al pedido y se gira (las veces que se quiera).
 // El premio lo elige carrito.js (ruleta.girar) según los pesos de config.js; acá solo se anima
@@ -70,6 +71,18 @@ function rueda() {
     <span class="ruleta-puntero" aria-hidden="true"></span>`;
 }
 
+// Los premios en detalle, para verlos antes de girar (tocando uno se ve la foto en grande)
+function listaPremios() {
+  return RULETA.premios
+    .map(
+      (p, i) => `<li><button type="button" class="ruleta-lista-premio" data-ver-premio="${i}" ${p.foto ? '' : 'disabled'}>
+        <span class="ruleta-lista-foto">${p.foto ? `<img src="/productos/400/${p.foto}" alt="" loading="lazy">` : REGALO}</span>
+        <b>${escapar(p.nombre)}</b><small>${escapar(p.marca)}</small>
+      </button></li>`,
+    )
+    .join('');
+}
+
 function crear() {
   caja = document.createElement('div');
   caja.className = 'ruleta';
@@ -87,6 +100,11 @@ function crear() {
       <p class="ruleta-bajada">Sumá un giro a tu pedido por <b>${formatoPrecio(RULETA.precio)}</b>. ¡Siempre te llevás un premio!</p>
       <div class="ruleta-caja">${rueda()}</div>
       <div class="ruleta-accion" aria-live="polite"></div>
+      <section class="ruleta-lista" aria-labelledby="ruleta-lista-titulo">
+        <h3 class="ruleta-lista-titulo" id="ruleta-lista-titulo">Premios que podés ganar</h3>
+        <ul class="ruleta-lista-premios">${listaPremios()}</ul>
+        <p class="ruleta-lista-nota">Tocá un premio para verlo en grande.</p>
+      </section>
     </div>
     <div class="ruleta-confeti" aria-hidden="true"></div>`;
   document.body.append(caja);
@@ -104,12 +122,18 @@ function crear() {
       return girar();
     }
     if (e.target.closest('[data-girar]')) girar();
+    const ver = e.target.closest('[data-ver-premio]');
+    if (ver) {
+      const p = RULETA.premios[ver.dataset.verPremio];
+      abrirZoom(fotoGrande(`/productos/${p.foto}`), `${p.nombre} ${p.marca}`);
+    }
   });
 
   addEventListener(
     'keydown',
     (e) => {
-      if (!abierta || e.key !== 'Escape') return;
+      // con la foto de un premio abierta, Escape cierra solo la foto
+      if (!abierta || e.key !== 'Escape' || document.querySelector('.zoom:not([hidden])')) return;
       e.stopPropagation();
       cerrarRuleta();
     },

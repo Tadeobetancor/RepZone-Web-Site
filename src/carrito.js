@@ -1,6 +1,6 @@
 // Carrito: lista de { id, sabor, tamano, cantidad }. Se guarda en el navegador de cada cliente.
 // Los precios no se guardan: siempre se toman del catálogo, así un cambio de precio se ve al instante.
-import { WHATSAPP_PEDIDOS, RULETA } from './config.js';
+import { WHATSAPP, RULETA } from './config.js';
 import { formatoPrecio } from './datos.js';
 
 const CLAVE = 'repzone-carrito';
@@ -146,7 +146,7 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
     ...renglones,
     '',
     `*Total: ${formatoPrecio(total)}*`,
-    entrega === 'envio' ? 'Entrega: Envío (a cotizar)' : 'Entrega: Retiro (a coordinar)',
+    entrega === 'envio' ? 'Entrega: Envío (a cotizar)' : 'Entrega: Retiro en el centro de distribución',
   ];
   if (entrega === 'envio') {
     if (zona) partes.push(`Barrio/localidad: ${zona.trim()}`);
@@ -156,4 +156,4 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
   return partes.join('\n');
 }
 
-export const linkPedido = (texto) => `https://wa.me/${WHATSAPP_PEDIDOS}?text=${encodeURIComponent(texto)}`;
+export const linkPedido = (texto) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;

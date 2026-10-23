@@ -259,7 +259,7 @@ function pintarEntrega(ls) {
             </button>
             <button type="button" class="entrega-opcion" data-entrega="retiro" aria-pressed="${datos.entrega === 'retiro'}">
               <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
-              <b>Retiro</b><small>Coordinamos el punto de retiro</small>
+              <b>Retiro</b><small>Retirá en nuestro centro de distribución</small>
             </button>
           </div>
         </fieldset>
