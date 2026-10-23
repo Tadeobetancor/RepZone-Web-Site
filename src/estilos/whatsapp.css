@@ -1,5 +1,9 @@
 /* Botón flotante de WhatsApp */
 .wa-fab {
+  /* verde de WhatsApp (en vez del rojo de la marca) */
+  --wa: #25d366;
+  --wa-profundo: #128c4a;
+  --wa-rgb: 37 211 102;
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
   bottom: max(16px, env(safe-area-inset-bottom));
@@ -17,10 +21,10 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: var(--rojo);
+  background: var(--wa);
   box-shadow:
-    0 5px 0 var(--rojo-profundo),
-    0 14px 30px -6px rgb(var(--rojo-rgb) / 0.6);
+    0 5px 0 var(--wa-profundo),
+    0 14px 30px -6px rgb(var(--wa-rgb) / 0.6);
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
 
@@ -42,7 +46,7 @@
 }
 
 .wa-fab-boton::after {
-  border: 2px solid rgb(var(--rojo-rgb) / 0.8);
+  border: 2px solid rgb(var(--wa-rgb) / 0.8);
   opacity: 0;
 }
 
@@ -59,15 +63,15 @@
 .wa-fab:hover .wa-fab-boton {
   transform: translateY(-3px) rotate(-6deg);
   box-shadow:
-    0 8px 0 var(--rojo-profundo),
-    0 20px 40px -6px rgb(var(--rojo-rgb) / 0.75);
+    0 8px 0 var(--wa-profundo),
+    0 20px 40px -6px rgb(var(--wa-rgb) / 0.75);
 }
 
 .wa-fab:active .wa-fab-boton {
   transform: translateY(4px);
   box-shadow:
-    0 1px 0 var(--rojo-profundo),
-    0 6px 14px -6px rgb(var(--rojo-rgb) / 0.6);
+    0 1px 0 var(--wa-profundo),
+    0 6px 14px -6px rgb(var(--wa-rgb) / 0.6);
 }
 
 /* el texto flota a la izquierda sin ocupar lugar: solo el círculo recibe los toques */

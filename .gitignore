@@ -17,3 +17,4 @@ dist
 
 # Planilla para importar en Google Sheets (una sola vez; después manda la de Google)
 /RepZone-catalogo.xlsx
+/RepZone-catalogo-simple.xlsx

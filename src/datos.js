@@ -4,10 +4,11 @@
 // Orden: la planilla → la última copia que este navegador bajó de la planilla → public/catalogo.csv.
 // La planilla se pide apenas abre la página, así que la espera queda tapada por la pantalla de carga.
 
-// Link de la planilla publicada como CSV (Archivo › Compartir › Publicar en la Web › .csv).
+// Link de la planilla publicada como CSV (Archivo › Compartir › Publicar en la Web › pestaña Productos › .csv).
+// Planilla simple del cliente (desde el 23/10/2026).
 // Vacío = se usa public/catalogo.csv.
 export const PLANILLA_CSV =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQqOPBy56Nn_JZ5jEppK64PWk0uh8VuSF1MpzrbADxqWH1ulgWhfEy5GZFkZyxmsfwFgglKkOwcgbZN/pub?gid=1507347419&single=true&output=csv';
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxTNI6E53meRBrGwxcxKyEOUsoZ36bvad9jcCXksYWCSpi7U10F4YZuR8ZsAm6VJBIe64I9Dg-RRnt/pub?gid=1931374867&single=true&output=csv';
 const RESPALDO = '/catalogo.csv';
 const ESPERA_MAXIMA = 4000; // si Google tarda más, se muestra la última copia y no se hace esperar al cliente
 const CLAVE_COPIA = 'repzone-catalogo';
@@ -63,11 +64,23 @@ async function leer(url, signal) {
 }
 
 const si = (v) => /^(si|sí|s|x|1|true)$/i.test(String(v).trim());
-const lista = (v) => String(v || '').split('|').map((s) => s.trim()).filter(Boolean);
+const lista = (v, separador = '|') => String(v || '').split(separador).map((s) => s.trim()).filter(Boolean);
 const numero = (v) => {
   const n = Number(String(v).replace(/[^\d]/g, ''));
   return n > 0 ? n : null;
 };
+
+// Foto de la planilla: nombre de archivo en public/productos/, link de Google Drive o link a una imagen.
+// Un link de Drive ("Compartir › Copiar vínculo", con acceso para cualquiera con el link) se convierte
+// en la imagen misma; drive(id, ancho) pide el tamaño justo para cada lugar.
+const drive = (id, ancho) => `https://drive.google.com/thumbnail?id=${id}&sz=w${ancho}`;
+const idDrive = (url) => url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=|thumbnail\?id=)([\w-]{20,})/)?.[1];
+
+function rutaFoto(n) {
+  if (!/^https?:/i.test(n)) return `/productos/${n}`;
+  const id = idDrive(n);
+  return id ? drive(id, 800) : n;
+}
 
 // La categoría se puede escribir como la ve el cliente ("Proteínas") o con su código ("proteinas")
 // Los aminoácidos van en Variados, y todo lo que se llama "Omega…" (salvo los combos) en Omega 3,
@@ -86,32 +99,38 @@ function normalizar(f) {
   const stock = String(f.stock ?? '').trim();
   const nombre = f.nombre?.trim();
   const marca = f.marca?.trim() || '';
+  const precio = numero(f.precio);
+  const precioAnterior = numero(f.precio_anterior);
+  // en la planilla simple no hay columna "¿Es combo?": la categoría Combos alcanza
+  const combo = si(f.combo) || /^combos?$/.test(normalizarTexto(f.categoria || ''));
   return {
     // sin código, se arma uno con la marca y el nombre (sirve para el carrito y el link del producto)
     id: f.id?.trim() || normalizarTexto(`${marca} ${nombre || ''}`).replace(/ /g, '-'),
     nombre,
     marca,
-    categoria: categoria(f.categoria, { nombre, combo: si(f.combo) }),
-    precio: numero(f.precio),
-    precioAnterior: numero(f.precio_anterior),
+    categoria: categoria(f.categoria, { nombre, combo }),
+    precio,
+    precioAnterior,
     // "200 g = 5100 | 400 g = 7500"
     tamanos: lista(f.tamanos).map((t) => {
       const [nombre, precio] = t.split('=').map((s) => s.trim());
       return { nombre, precio: numero(precio) };
     }),
-    // "Chocolate #5A3A22 | Vainilla"
-    sabores: lista(f.sabores).map((s) => {
+    // "Chocolate #5A3A22, Vainilla" (con comas o con |)
+    sabores: lista(f.sabores, /[|,]/).map((s) => {
       const m = s.match(/^(.*?)\s*(#[0-9a-f]{3,8})?$/i);
       return { nombre: m[1], color: m[2] || null };
     }),
-    fotos: lista(f.fotos).map((n) => (/^https?:/.test(n) ? n : `/productos/${n}`)),
+    // "📸 Foto" (link de Drive que pega el cliente) manda; si está vacía, la foto de siempre
+    fotos: lista(f.foto_link || f.fotos).map(rutaFoto),
     beneficios: lista(f.beneficios),
     composicion: f.composicion || '',
     tablaNutricional: f.tabla_nutricional || '',
     modoUso: f.modo_uso || '',
-    oferta: si(f.oferta),
+    // en oferta: si tiene precio de antes (más alto), o si la planilla vieja lo marcaba
+    oferta: si(f.oferta) || precioAnterior > precio,
     tendencia: si(f.tendencia),
-    combo: si(f.combo),
+    combo,
     // stock: SI/NO o un número; vacío cuenta como disponible
     stock: stock === '' || si(stock) || numero(stock) > 0,
   };
@@ -159,6 +178,9 @@ const COLUMNAS = {
   codigo: 'id',
   producto: 'nombre',
   precio_anterior_tachado: 'precio_anterior',
+  precio_de_antes: 'precio_anterior',
+  foto: 'foto_link',
+  foto_nueva: 'foto_link',
   hay_stock: 'stock',
   en_oferta: 'oferta',
   destacado: 'tendencia',
@@ -174,14 +196,26 @@ const columna = (t) => {
 
 // Foto chica (400 px) para tarjetas y listas: pesa menos y el celular la dibuja más rápido.
 // Las genera scripts/miniaturas.mjs; las fotos con link externo se usan tal cual.
-export const miniatura = (src) => (src.startsWith('/productos/') ? src.replace('/productos/', '/productos/400/').replace(/\.\w+$/, '.webp') : src);
+export const miniatura = (src) =>
+  src.startsWith('/productos/')
+    ? src.replace('/productos/', '/productos/400/').replace(/\.\w+$/, '.webp')
+    : idDrive(src)
+      ? drive(idDrive(src), 400)
+      : src;
 
 // Foto grande (1600 px, más nítida) para la foto ampliada de la ficha
-export const fotoGrande = (src) => (src.startsWith('/productos/') ? src.replace('/productos/', '/productos/1600/').replace(/\.\w+$/, '.webp') : src);
+export const fotoGrande = (src) =>
+  src.startsWith('/productos/')
+    ? src.replace('/productos/', '/productos/1600/').replace(/\.\w+$/, '.webp')
+    : idDrive(src)
+      ? drive(idDrive(src), 1600)
+      : src;
 
 // Foto chica o grande según el lugar que ocupa en la pantalla
 export const fotoAdaptable = (src, sizes) =>
-  src.startsWith('/productos/') ? `src="${miniatura(src)}" srcset="${miniatura(src)} 400w, ${src} 800w" sizes="${sizes}"` : `src="${src}"`;
+  src.startsWith('/productos/') || idDrive(src)
+    ? `src="${miniatura(src)}" srcset="${miniatura(src)} 400w, ${src} 800w" sizes="${sizes}"`
+    : `src="${src}"`;
 
 export const formatoPrecio = (n) => '$' + n.toLocaleString('es-AR');
 

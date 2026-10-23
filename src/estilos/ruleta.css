@@ -132,6 +132,15 @@
   will-change: transform;
 }
 
+/* Cada foto gira al revés que la rueda (mismo tiempo y frenado, ruleta.js): el producto queda
+   siempre derecho para quien mira, quieta o girando */
+.ruleta-foto-giro {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(calc(-1 * (var(--g) + var(--giro, 0deg))));
+  transition: transform var(--duracion, 0ms) cubic-bezier(0.14, 0.82, 0.18, 1);
+}
+
 /* foto del premio en su gajo, con sombra para despegarla del color */
 .ruleta-foto {
   filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.55));
@@ -196,9 +205,12 @@
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.7), 0 0 0 4px rgb(var(--rojo-rgb) / 0.35);
 }
 
+/* la pesa de RepZone, recortada y centrada (logo-pesa-centro.png) */
 .ruleta-centro img {
-  width: 74%;
-  height: auto;
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgb(var(--rojo-rgb) / 0.6));
 }
 
 /* puntero arriba: triángulo rojo con borde blanco que "golpea" en cada gajo (ruleta.js) */

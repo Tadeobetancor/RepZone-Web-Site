@@ -18,6 +18,7 @@ let abierta = false;
 let empujado = false;
 let girando = false;
 let giroActual = 0; // grados acumulados de la rueda
+const FRENADO = 'cubic-bezier(0.14, 0.82, 0.18, 1)';
 let focoPrevio = null;
 
 const REGALO = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v10H4zM3 7h18v4H3zM12 7v14M12 7S10.5 3 8 3a2 2 0 0 0 0 4M12 7s1.5-4 4-4a2 2 0 0 1 0 4"/></svg>`;
@@ -36,9 +37,12 @@ function rueda() {
       const desde = i * A - A / 2;
       const hasta = desde + A;
       const [linea1, linea2] = p.rueda;
-      // con foto: el producto parado en su gajo, mirando hacia afuera; sin foto, el nombre
+      // con foto: el producto en su gajo, siempre derecho para quien mira (gira al revés que la rueda,
+      // ver .ruleta-foto-giro); sin foto, el nombre
       const contenido = p.foto
-        ? `<g transform="rotate(${i * A})"><image href="/productos/400/${p.foto}" x="-19" y="-82" width="38" height="44" preserveAspectRatio="xMidYMid meet" class="ruleta-foto"/></g>`
+        ? `<g transform="rotate(${i * A}) translate(0 -58)"><g class="ruleta-foto-giro" style="--g:${i * A}deg">
+            <image href="/productos/400/${p.foto}" x="-17" y="-21" width="34" height="42" preserveAspectRatio="xMidYMid meet" class="ruleta-foto"/>
+          </g></g>`
         : `<g transform="rotate(${i * A - 90})">
             <text x="87" y="-1.5" class="ruleta-texto1">${escapar(linea1)}</text>
             <text x="87" y="6.5" class="ruleta-texto2">${escapar(linea2)}</text>
@@ -67,7 +71,7 @@ function rueda() {
     <svg class="ruleta-rueda" viewBox="-92 -92 184 184" aria-hidden="true">${gajos}
       <circle r="91.6" fill="none" stroke="rgb(255 255 255 / 0.35)" stroke-width="0.8"/>
     </svg>
-    <span class="ruleta-centro" aria-hidden="true"><img src="/logo-pesa.png" alt="" width="960" height="398"></span>
+    <span class="ruleta-centro" aria-hidden="true"><img src="/logo-pesa-centro.png" alt="" width="240" height="240"></span>
     <span class="ruleta-puntero" aria-hidden="true"></span>`;
 }
 
@@ -190,8 +194,11 @@ function girar() {
   giroActual += vueltas * 360 + destino;
   const duracion = conMovimiento() ? 5600 : 1200;
   const disco = el('.ruleta-rueda');
-  disco.style.transition = `transform ${duracion}ms cubic-bezier(0.14, 0.82, 0.18, 1)`;
+  disco.style.transition = `transform ${duracion}ms ${FRENADO}`;
   disco.style.transform = `rotate(${giroActual}deg)`;
+  // las fotos giran al revés, con el mismo tiempo y frenado: quedan derechas todo el giro
+  disco.style.setProperty('--duracion', `${duracion}ms`);
+  disco.style.setProperty('--giro', `${giroActual}deg`);
   if (conMovimiento()) tictac(disco);
 
   setTimeout(() => {
@@ -245,6 +252,8 @@ export function abrirRuleta() {
   disco.style.transition = 'none';
   giroActual = premios.length ? -premios[premios.length - 1] * A : 0;
   disco.style.transform = `rotate(${giroActual}deg)`;
+  disco.style.setProperty('--duracion', '0ms');
+  disco.style.setProperty('--giro', `${giroActual}deg`);
   pintarAccion();
   // "atrás" cierra la ruleta y deja el carrito abierto
   const panel = panelAbierto();

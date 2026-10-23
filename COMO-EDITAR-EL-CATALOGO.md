@@ -35,7 +35,7 @@ Las filas de sección (un nombre sin precio) y las filas de título de arriba no
 | `precio_anterior` | Si está en oferta, el precio de antes (se muestra tachado). Si no, vacío | `84400` |
 | `tamaños` | Opcional. Cada tamaño con su precio, separados por `\|` | `1 kg = 76900 \| 2 kg = 139000` |
 | `sabores` | Separados por `\|`. Si querés, un color para el botón | `Chocolate #5A3A22 \| Vainilla` |
-| `fotos` | Nombre del archivo en `public/productos/` (la versión chica para la grilla se genera sola al publicar), o un link a una imagen. Varias con `\|` | `star-whey-doypack-1kg.webp` |
+| `fotos` | Un link de Google Drive (ver "Fotos" más abajo), o el nombre de un archivo de `public/productos/`. Varias con `\|` | `https://drive.google.com/file/d/…/view` |
 | `beneficios` | Frases cortas con su ícono, separadas por `\|` | `musculo: Ayuda a ganar músculo \| rapido: Se prepara en segundos` |
 | `composicion`, `tabla_nutricional`, `modo_uso` | Texto libre (va en el desplegable de la ficha) | |
 | `oferta` | `SI` para que aparezca en Ofertas | `SI` |
@@ -58,5 +58,18 @@ Si un sabor sale sin color o con uno que no te gusta, escribí el color al lado 
 - **Cambiar un precio:** editá la columna `precio`.
 - **Poner algo en oferta:** `oferta` en `SI`, el precio nuevo en `precio` y el de antes en `precio_anterior`.
 - **Se acabó el stock:** `stock` en `NO`. Cuando vuelva, `SI`.
-- **Producto nuevo:** agregá una fila. Para la foto, subila a cualquier lado que dé un link directo a la imagen
-  o pasásela a Desde Cero para sumarla a la web.
+- **Producto nuevo:** agregá una fila dentro de su sección y completá al menos Producto, Marca, Categoría,
+  Precio, ¿Hay stock? y Fotos. El código se arma solo.
+
+## Fotos (sin depender de nadie)
+
+1. En Google Drive, una sola vez: creá una carpeta "Fotos RepZone" › **Compartir** › Acceso general:
+   **Cualquier persona con el enlace** (Lector). Todo lo que subas ahí queda visible para la web.
+2. Subí la foto a esa carpeta.
+3. Tocá los tres puntos de la foto › **Compartir › Copiar vínculo**.
+4. Pegá ese link en la columna **Fotos** del producto. La web lo convierte sola y pide el tamaño justo
+   (chica en el catálogo, grande en la foto ampliada).
+
+Consejo: las fotos se ven mucho mejor **sin fondo** (PNG o WEBP transparente) y de 800 px o más.
+Si una foto tiene fondo blanco, se va a ver el recuadro blanco sobre el fondo oscuro de la web:
+pasásela a Desde Cero para recortarla.

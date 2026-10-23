@@ -28,8 +28,8 @@ export const CATEGORIAS = [
   { id: 'pre-entrenos', nombre: 'Pre-entrenos' },
   { id: 'importados', nombre: 'Importados' },
   { id: 'shakers', nombre: 'Shakers' },
-  { id: 'variados', nombre: 'Variados' },
   { id: 'alimentos', nombre: 'Alimentos saludables' },
+  { id: 'variados', nombre: 'Variados' },
 ];
 
 export const linkWhatsApp = (texto = '¡Hola RepZone! Tengo una consulta.') =>

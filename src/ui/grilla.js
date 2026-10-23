@@ -5,6 +5,27 @@ const POR_PAGINA = 24;
 const fuego = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`;
 const paquete = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5zM3.4 11.3 2 12l10 5 10-5-1.4-.7L12 14.6l-8.6-3.3zm0 5L2 17l10 5 10-5-1.4-.7L12 19.6l-8.6-3.3z"/></svg>`;
 const rayo = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>`;
+const svg = (trazos) => `<svg viewBox="0 0 24 24" aria-hidden="true">${trazos}</svg>`;
+
+// Ícono de cada botón de la fila de categorías (las que tienen una imagen reconocible)
+const ICONOS_FILTRO = {
+  ofertas: rayo,
+  combos: paquete,
+  // tarro de proteína
+  proteinas: svg('<path d="M7 2.5h10a1 1 0 0 1 1 1V6H6V3.5a1 1 0 0 1 1-1z"/><path fill-rule="evenodd" d="M5.5 7.5h13a1 1 0 0 1 1 1V20a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2V8.5a1 1 0 0 1 1-1zM7.5 11v6h9v-6z"/>'),
+  // medidor con polvo
+  creatinas: svg('<path d="M4.5 7.2C5.4 5.2 8 4.4 9 5.6c1-1.5 4.2-1 4.5 1.6z"/><path d="M3 9h11.5v1.5A5.75 5.75 0 0 1 8.75 16.25 5.75 5.75 0 0 1 3 10.5zM15.5 9.6l5.6-1.1a1.1 1.1 0 0 1 .4 2.2l-6 1.2z"/>'),
+  // cápsula
+  omega3: svg('<path d="M10.4 4.1a5 5 0 0 1 7.1 7.1l-3.2 3.2-7.1-7.1z"/><path d="M6.2 8.3l7.1 7.1-3.6 3.6a5 5 0 0 1-7.1-7.1z" opacity=".55"/>'),
+  // llama
+  'pre-entrenos': fuego,
+  // avión
+  importados: svg('<path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>'),
+  // vaso shaker
+  shakers: svg('<path d="M10 1.5h3v2.5h-3z"/><path d="M6.5 4.5h11a1 1 0 0 1 1 1V8h-13V5.5a1 1 0 0 1 1-1z"/><path fill-rule="evenodd" d="M6 9h12l-1.4 12a1.2 1.2 0 0 1-1.2 1H8.6a1.2 1.2 0 0 1-1.2-1zM8.4 12l.3 3h6.6l.3-3z"/>'),
+  // hoja
+  alimentos: svg('<path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>'),
+};
 
 let catalogo = [];
 let estado = { filtro: 'todos', busqueda: '', mostrados: POR_PAGINA };
@@ -96,7 +117,7 @@ function pintarFiltros() {
     .filter((f) => f.id === 'todos' || conteo(f) > 0)
     .map(
       (f) => `<button type="button" class="filtro filtro-${f.id}" data-filtro="${f.id}" aria-pressed="${!estado.busqueda && estado.filtro === f.id}">
-        ${f.id === 'ofertas' ? rayo : f.id === 'combos' ? paquete : ''}<span>${f.nombre}</span><small>${conteo(f)}</small></button>`,
+        ${ICONOS_FILTRO[f.id] ?? ''}<span>${f.nombre}</span><small>${conteo(f)}</small></button>`,
     )
     .join('');
   caja.scrollLeft = desplazado;
