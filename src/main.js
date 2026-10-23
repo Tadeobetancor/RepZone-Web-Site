@@ -10,6 +10,7 @@ import './estilos/panel.css';
 import './estilos/pie.css';
 import './estilos/whatsapp.css';
 import './estilos/zoom.css';
+import './estilos/ruleta.css';
 
 import { cargarCatalogo } from './datos.js';
 import { iniciarCargador } from './ui/cargador.js';

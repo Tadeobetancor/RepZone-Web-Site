@@ -52,7 +52,7 @@
 }
 
 .zoom.abierta .zoom-img.acercada {
-  transform: scale(2.2);
+  transform: scale(1.8);
   cursor: zoom-out;
 }
 

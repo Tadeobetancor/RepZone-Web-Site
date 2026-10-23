@@ -1,7 +1,7 @@
 import { panelAbierto } from './panel.js';
 
 // Foto ampliada: la foto del producto casi a pantalla completa, sobre un fondo translúcido.
-// Tocar la foto la acerca (y moviendo el dedo o el mouse se recorre); tocar de nuevo la aleja.
+// Usa la versión de 1600 px de la foto (scripts/miniaturas.mjs). Tocar la foto la acerca (y moviendo el dedo o el mouse se recorre); tocar de nuevo la aleja.
 // Se cierra con la X, tocando afuera, con Escape o con el botón "atrás" del celular.
 let caja;
 let img;

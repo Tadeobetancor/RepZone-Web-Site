@@ -1,0 +1,248 @@
+import { RULETA } from '../config.js';
+import { ruleta } from '../carrito.js';
+import { formatoPrecio } from '../datos.js';
+import { panelAbierto } from './panel.js';
+
+// Ruleta del carrito: se abre sobre el carrito, se suma el giro al pedido y se gira (las veces que se quiera).
+// El premio lo elige carrito.js (ruleta.girar) según los pesos de config.js; acá solo se anima
+// la rueda para que frene en ese premio. Se cierra con la X, Escape o el botón "atrás".
+const N = RULETA.premios.length;
+const A = 360 / N;
+const conMovimiento = () => document.documentElement.classList.contains('con-movimiento');
+const escapar = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const el = (sel) => caja.querySelector(sel);
+
+let caja;
+let abierta = false;
+let empujado = false;
+let girando = false;
+let giroActual = 0; // grados acumulados de la rueda
+let focoPrevio = null;
+
+const REGALO = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v10H4zM3 7h18v4H3zM12 7v14M12 7S10.5 3 8 3a2 2 0 0 0 0 4M12 7s1.5-4 4-4a2 2 0 0 1 0 4"/></svg>`;
+
+// ---------- La rueda (SVG) ----------
+const punto = (r, grados) => {
+  const a = ((grados - 90) * Math.PI) / 180;
+  return `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`;
+};
+
+function rueda() {
+  const colores = RULETA.premios.map((_, i) => (N % 2 && i === N - 1 ? 'var(--rojo-profundo)' : i % 2 ? '#141416' : 'var(--rojo)'));
+  const gajos = RULETA.premios
+    .map((p, i) => {
+      // el gajo i queda centrado en i·A grados (0 = arriba, sentido horario)
+      const desde = i * A - A / 2;
+      const hasta = desde + A;
+      const [linea1, linea2] = p.rueda;
+      // con foto: el producto parado en su gajo, mirando hacia afuera; sin foto, el nombre
+      const contenido = p.foto
+        ? `<g transform="rotate(${i * A})"><image href="/productos/400/${p.foto}" x="-19" y="-82" width="38" height="44" preserveAspectRatio="xMidYMid meet" class="ruleta-foto"/></g>`
+        : `<g transform="rotate(${i * A - 90})">
+            <text x="87" y="-1.5" class="ruleta-texto1">${escapar(linea1)}</text>
+            <text x="87" y="6.5" class="ruleta-texto2">${escapar(linea2)}</text>
+          </g>`;
+      return `
+        <path d="M0 0 L${punto(92, desde)} A92 92 0 0 1 ${punto(92, hasta)} Z" fill="${colores[i]}"/>
+        <path d="M${punto(20, desde)} L${punto(92, desde)}" class="ruleta-separador"/>
+        ${contenido}`;
+    })
+    .join('');
+  const bombillas = Array.from({ length: N * 2 }, (_, k) => {
+    const [x, y] = punto(96.4, k * (A / 2)).split(' ');
+    return `<circle cx="${x}" cy="${y}" r="2.1" class="ruleta-bombilla${k % 2 ? ' impar' : ''}"/>`;
+  }).join('');
+  return `
+    <svg class="ruleta-aro" viewBox="-100 -100 200 200" aria-hidden="true">
+      <defs>
+        <radialGradient id="ruleta-aro-luz" r="0.5">
+          <stop offset="0.88" stop-color="#1d1d21"/><stop offset="0.96" stop-color="#2c2c32"/><stop offset="1" stop-color="#0a0a0b"/>
+        </radialGradient>
+      </defs>
+      <circle r="100" fill="url(#ruleta-aro-luz)"/>
+      <circle r="99.2" fill="none" stroke="rgb(var(--rojo-rgb) / 0.75)" stroke-width="1"/>
+      ${bombillas}
+    </svg>
+    <svg class="ruleta-rueda" viewBox="-92 -92 184 184" aria-hidden="true">${gajos}
+      <circle r="91.6" fill="none" stroke="rgb(255 255 255 / 0.35)" stroke-width="0.8"/>
+    </svg>
+    <span class="ruleta-centro" aria-hidden="true"><img src="/logo-pesa.png" alt="" width="960" height="398"></span>
+    <span class="ruleta-puntero" aria-hidden="true"></span>`;
+}
+
+function crear() {
+  caja = document.createElement('div');
+  caja.className = 'ruleta';
+  caja.hidden = true;
+  caja.setAttribute('role', 'dialog');
+  caja.setAttribute('aria-modal', 'true');
+  caja.setAttribute('aria-labelledby', 'ruleta-titulo');
+  caja.innerHTML = `
+    <button class="ruleta-cerrar" type="button" aria-label="Cerrar ruleta">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="ruleta-contenido">
+      <p class="etiqueta">Ruleta RepZone</p>
+      <h2 class="ruleta-titulo" id="ruleta-titulo">Girá y <span class="rojo">ganá</span></h2>
+      <p class="ruleta-bajada">Sumá un giro a tu pedido por <b>${formatoPrecio(RULETA.precio)}</b>. ¡Siempre te llevás un premio!</p>
+      <div class="ruleta-caja">${rueda()}</div>
+      <div class="ruleta-accion" aria-live="polite"></div>
+    </div>
+    <div class="ruleta-confeti" aria-hidden="true"></div>`;
+  document.body.append(caja);
+
+  caja.addEventListener('click', (e) => {
+    if (e.target.closest('.ruleta-cerrar') || e.target.closest('[data-listo]')) return cerrarRuleta();
+    if (e.target.closest('[data-comprar]')) {
+      ruleta.comprar();
+      return pintarAccion();
+    }
+    // "Girar otra vez": suma otro giro al pedido y gira de una
+    if (e.target.closest('[data-otra]')) {
+      ruleta.comprar();
+      pintarAccion();
+      return girar();
+    }
+    if (e.target.closest('[data-girar]')) girar();
+  });
+
+  addEventListener(
+    'keydown',
+    (e) => {
+      if (!abierta || e.key !== 'Escape') return;
+      e.stopPropagation();
+      cerrarRuleta();
+    },
+    true,
+  );
+  addEventListener('popstate', () => abierta && !history.state?.ruleta && ((empujado = false), cerrarRuleta()));
+}
+
+// ---------- Botón o resultado, según el estado del giro ----------
+const otraVez = `<button type="button" class="btn" data-otra>Girar otra vez · ${formatoPrecio(RULETA.precio)}</button>`;
+
+function pintarAccion({ festejo = false } = {}) {
+  const accion = el('.ruleta-accion');
+  if (ruleta.pendientes()) {
+    accion.innerHTML = `<button type="button" class="btn ruleta-girar" data-girar>¡Girar!</button>`;
+    return;
+  }
+  const premios = ruleta.premios();
+  if (festejo) {
+    const p = RULETA.premios[premios[premios.length - 1]];
+    accion.innerHTML = `
+      <div class="ruleta-premio${festejo ? ' nuevo' : ''}">
+        <span class="ruleta-premio-foto">${p.foto ? `<img src="/productos/400/${p.foto}" alt="">` : REGALO}</span>
+        <span class="ruleta-premio-texto">
+          <small>¡Te tocó!</small>
+          <b>${escapar(p.nombre)}</b>
+          <span>${escapar(p.marca)}</span>
+        </span>
+      </div>
+      <p class="ruleta-nota">Va con tu pedido: lo coordinamos por WhatsApp.</p>
+      ${otraVez}
+      <button type="button" class="ruleta-listo" data-listo>Listo, volver al carrito</button>`;
+    return;
+  }
+  accion.innerHTML = premios.length
+    ? `${otraVez}<p class="ruleta-nota">Ya ganaste ${premios.length === 1 ? 'un premio' : `${premios.length} premios`}: los ves en tu carrito.</p>`
+    : `<button type="button" class="btn" data-comprar>Sumar giro · ${formatoPrecio(RULETA.precio)}</button>`;
+}
+
+// ---------- El giro ----------
+function girar() {
+  if (girando || !ruleta.pendientes()) return;
+  girando = true;
+  const i = ruleta.girar();
+  const boton = el('[data-girar]');
+  boton.disabled = true;
+  boton.textContent = 'Girando…';
+  caja.classList.add('girando');
+
+  // la rueda frena con el premio bajo el puntero, en un lugar al azar dentro de su gajo
+  const corrimiento = (Math.random() - 0.5) * A * 0.7;
+  const destino = (((-i * A + corrimiento - giroActual) % 360) + 360) % 360;
+  const vueltas = conMovimiento() ? 6 : 1;
+  giroActual += vueltas * 360 + destino;
+  const duracion = conMovimiento() ? 5600 : 1200;
+  const disco = el('.ruleta-rueda');
+  disco.style.transition = `transform ${duracion}ms cubic-bezier(0.14, 0.82, 0.18, 1)`;
+  disco.style.transform = `rotate(${giroActual}deg)`;
+  if (conMovimiento()) tictac(disco);
+
+  setTimeout(() => {
+    girando = false;
+    caja.classList.remove('girando');
+    pintarAccion({ festejo: true });
+    if (conMovimiento()) confeti();
+    navigator.vibrate?.([40, 60, 40]);
+  }, duracion + 150);
+}
+
+// El puntero "golpea" cada vez que pasa un gajo
+function tictac(disco) {
+  const puntero = el('.ruleta-puntero');
+  let previo = null;
+  const cuadro = () => {
+    if (!girando) return;
+    const m = getComputedStyle(disco).transform.match(/matrix\(([^,]+),\s*([^,]+)/);
+    if (m) {
+      const grados = (Math.atan2(Number(m[2]), Number(m[1])) * 180) / Math.PI;
+      const gajo = Math.round((((-grados % 360) + 360) % 360) / A) % N;
+      if (previo !== null && gajo !== previo) {
+        puntero.animate([{ transform: 'rotate(-24deg)' }, { transform: 'rotate(0deg)' }], { duration: 160, easing: 'ease-out' });
+      }
+      previo = gajo;
+    }
+    requestAnimationFrame(cuadro);
+  };
+  requestAnimationFrame(cuadro);
+}
+
+function confeti() {
+  const capa = el('.ruleta-confeti');
+  const colores = ['var(--rojo)', '#ffffff', '#ffc83d', 'var(--rojo-vivo)'];
+  let html = '';
+  for (let k = 0; k < 70; k++) {
+    const r = (a, b) => (a + Math.random() * (b - a)).toFixed(1);
+    html += `<span style="--x:${r(-48, 48)}vw;--y:${r(-55, -20)}vh;--caida:${r(30, 60)}vh;--g:${r(-540, 540)}deg;--d:${r(0, 0.25)}s;--t:${r(1.6, 2.4)}s;background:${colores[k % colores.length]};${k % 3 ? '' : 'border-radius:50%;'}"></span>`;
+  }
+  capa.innerHTML = html;
+  setTimeout(() => (capa.innerHTML = ''), 2800);
+}
+
+// ---------- Abrir y cerrar ----------
+export function abrirRuleta() {
+  if (!caja) crear();
+  focoPrevio = document.activeElement;
+  // la rueda aparece frenada en el último premio que salió
+  const premios = ruleta.premios();
+  const disco = el('.ruleta-rueda');
+  disco.style.transition = 'none';
+  giroActual = premios.length ? -premios[premios.length - 1] * A : 0;
+  disco.style.transform = `rotate(${giroActual}deg)`;
+  pintarAccion();
+  // "atrás" cierra la ruleta y deja el carrito abierto
+  const panel = panelAbierto();
+  if (panel && !history.state?.panel) history.replaceState({ ...(history.state || {}), panel: panel.id }, '');
+  history.pushState({ ...(history.state || {}), ruleta: true }, '');
+  empujado = true;
+  abierta = true;
+  caja.hidden = false;
+  requestAnimationFrame(() => caja.classList.add('abierta'));
+  el('.ruleta-accion .btn')?.focus({ preventScroll: true });
+}
+
+export function cerrarRuleta() {
+  if (!abierta) return;
+  abierta = false;
+  if (empujado) {
+    empujado = false;
+    history.back();
+  }
+  caja.classList.remove('abierta');
+  const fin = () => (caja.hidden = true);
+  if (conMovimiento()) setTimeout(fin, 300);
+  else fin();
+  focoPrevio?.focus?.({ preventScroll: true });
+}

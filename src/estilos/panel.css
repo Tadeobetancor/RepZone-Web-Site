@@ -803,8 +803,106 @@ html:not(.con-movimiento) .particulas span {
   font-stretch: 115%;
 }
 
-.btn-wa {
+.btn-wa,
+.btn-confirmar {
   width: 100%;
+}
+
+/* Carrito en dos pasos: indicador arriba, 1 · Tu pedido → 2 · Entrega */
+.carrito-pasos {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 12px var(--gutter) 0;
+  list-style: none;
+}
+
+.carrito-pasos li {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 9px;
+  border-bottom: 2px solid rgb(255 255 255 / 0.12);
+  color: var(--gris-2);
+  font: 700 0.78rem/1 var(--fuente);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.carrito-pasos span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.08);
+  font-size: 0.72rem;
+}
+
+.carrito-pasos li[aria-current] {
+  border-color: var(--rojo);
+  color: var(--blanco);
+}
+
+.carrito-pasos li[aria-current] span {
+  background: var(--rojo);
+}
+
+.carrito-pasos li.hecho {
+  border-color: rgb(var(--rojo-rgb) / 0.4);
+}
+
+.carrito-pasos li.hecho span {
+  background: rgb(var(--rojo-rgb) / 0.25);
+  color: var(--rojo-vivo);
+}
+
+/* el contenido entra deslizándose hacia el lado del paso */
+.con-movimiento .paso-avanza {
+  animation: paso-entra 0.35s var(--ease);
+}
+
+.con-movimiento .paso-vuelve {
+  --desde: -28px;
+  animation: paso-entra 0.35s var(--ease);
+}
+
+@keyframes paso-entra {
+  from {
+    opacity: 0;
+    transform: translateX(var(--desde, 28px));
+  }
+}
+
+.carrito-entrega {
+  display: grid;
+  gap: 16px;
+  padding: 14px var(--gutter) 22px;
+}
+
+.carrito-volver {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  color: var(--gris);
+  font-weight: 700;
+}
+
+.carrito-volver .icono {
+  width: 18px;
+  height: 18px;
+}
+
+.carrito-volver small {
+  color: var(--gris-2);
+  font-weight: 600;
+}
+
+.carrito-volver:hover {
+  color: var(--blanco);
 }
 
 .btn-wa svg {

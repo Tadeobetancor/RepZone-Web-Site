@@ -70,10 +70,16 @@ const numero = (v) => {
 };
 
 // La categoría se puede escribir como la ve el cliente ("Proteínas") o con su código ("proteinas")
-function categoria(v) {
+// Los aminoácidos van en Variados, y todo lo que se llama "Omega…" (salvo los combos) en Omega 3,
+// aunque la planilla diga otra cosa.
+const MUDADAS = { aminoacidos: 'variados' };
+
+function categoria(v, { nombre = '', combo = false } = {}) {
+  if (/omega/i.test(nombre) && !combo) return 'omega3';
   const t = normalizarTexto(v || '');
   const c = CATEGORIAS.find((c) => normalizarTexto(c.id) === t || normalizarTexto(c.nombre) === t);
-  return c ? c.id : t.replace(/ /g, '-');
+  const id = c ? c.id : t.replace(/ /g, '-');
+  return MUDADAS[id] ?? id;
 }
 
 function normalizar(f) {
@@ -85,7 +91,7 @@ function normalizar(f) {
     id: f.id?.trim() || normalizarTexto(`${marca} ${nombre || ''}`).replace(/ /g, '-'),
     nombre,
     marca,
-    categoria: categoria(f.categoria),
+    categoria: categoria(f.categoria, { nombre, combo: si(f.combo) }),
     precio: numero(f.precio),
     precioAnterior: numero(f.precio_anterior),
     // "200 g = 5100 | 400 g = 7500"
@@ -169,6 +175,9 @@ const columna = (t) => {
 // Foto chica (400 px) para tarjetas y listas: pesa menos y el celular la dibuja más rápido.
 // Las genera scripts/miniaturas.mjs; las fotos con link externo se usan tal cual.
 export const miniatura = (src) => (src.startsWith('/productos/') ? src.replace('/productos/', '/productos/400/').replace(/\.\w+$/, '.webp') : src);
+
+// Foto grande (1600 px, más nítida) para la foto ampliada de la ficha
+export const fotoGrande = (src) => (src.startsWith('/productos/') ? src.replace('/productos/', '/productos/1600/').replace(/\.\w+$/, '.webp') : src);
 
 // Foto chica o grande según el lugar que ocupa en la pantalla
 export const fotoAdaptable = (src, sizes) =>

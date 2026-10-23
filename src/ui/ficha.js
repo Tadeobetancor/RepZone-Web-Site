@@ -1,4 +1,4 @@
-import { cargarCatalogo, formatoPrecio, descuento, miniatura } from '../datos.js';
+import { cargarCatalogo, formatoPrecio, descuento, miniatura, fotoGrande } from '../datos.js';
 import { carrito, precioDe } from '../carrito.js';
 import { linkWhatsApp } from '../config.js';
 import { abrirPanel, abrirPanelDirecto, cerrarPanel } from './panel.js';
@@ -22,7 +22,7 @@ export async function iniciarFicha() {
     if (estado && e.target.closest('[data-zoom], .ficha-foto img')) {
       const galeria = el('ficha-galeria');
       const i = Math.round(galeria.scrollLeft / galeria.clientWidth);
-      return abrirZoom(estado.p.fotos[i] ?? estado.p.fotos[0], estado.p.nombre);
+      return abrirZoom(fotoGrande(estado.p.fotos[i] ?? estado.p.fotos[0]), estado.p.nombre);
     }
     const b = e.target.closest('[data-sabor], [data-tamano], [data-cantidad], [data-agregar], [data-foto]');
     if (!b || !estado) return;

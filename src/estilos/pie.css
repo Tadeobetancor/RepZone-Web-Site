@@ -220,18 +220,28 @@
   height: 20px;
 }
 
-/* Fotos de clientes: una tira que corre sola, despacio */
+/* Fotos de clientes: una tira que corre sola y se puede arrastrar con el dedo (pie.js) */
 .clientes-carrusel {
   overflow: hidden;
   margin-top: 4px;
   padding-block: 10px;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  /* lo vertical sigue moviendo la página; lo horizontal mueve la tira */
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.clientes-carrusel.arrastrando {
+  cursor: grabbing;
 }
 
 .clientes-pista {
   display: flex;
   width: max-content;
+  will-change: transform;
 }
 
 .clientes-tramo {
@@ -240,12 +250,9 @@
   padding: 8px 16px 8px 0;
 }
 
-.con-movimiento .clientes-pista {
-  animation: franja-corre 70s linear infinite;
-}
-
-.clientes-carrusel:hover .clientes-pista {
-  animation-play-state: paused;
+.clientes-tramo img {
+  -webkit-user-drag: none;
+  pointer-events: none;
 }
 
 /* Foto con marco: borde claro fino, luz roja detrás y estrellas tipo reseña abajo */

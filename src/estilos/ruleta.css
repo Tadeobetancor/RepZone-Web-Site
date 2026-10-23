@@ -1,0 +1,590 @@
+/* Ruleta del carrito (ruleta.js): pantalla propia sobre el carrito, con la rueda, el puntero y el premio */
+.ruleta {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background:
+    radial-gradient(60% 40% at 50% 38%, rgb(var(--rojo-rgb) / 0.32), transparent 70%),
+    radial-gradient(80% 50% at 50% 100%, rgb(var(--rojo-rgb) / 0.14), transparent 70%),
+    rgb(8 8 9 / 0.94);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.ruleta[hidden] {
+  display: none;
+}
+
+.ruleta.abierta {
+  opacity: 1;
+}
+
+.ruleta-contenido {
+  width: min(100%, 440px);
+  margin: 0 auto;
+  padding: max(56px, env(safe-area-inset-top)) var(--gutter) max(32px, env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.ruleta-contenido .etiqueta {
+  margin-bottom: 8px;
+}
+
+.ruleta-titulo {
+  margin: 0;
+  font: italic 900 clamp(2.3rem, 11vw, 3.3rem) / 0.95 var(--fuente-display);
+  font-stretch: 125%;
+  text-transform: uppercase;
+}
+
+.ruleta-bajada {
+  max-width: 34ch;
+  margin: 10px auto 0;
+  color: var(--gris);
+  font-size: 0.95rem;
+}
+
+.ruleta-bajada b {
+  color: var(--blanco);
+}
+
+.ruleta-cerrar {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: 14px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 50%;
+  background: rgb(10 10 11 / 0.7);
+  transition: background-color 0.2s, transform 0.2s var(--ease);
+}
+
+@media (hover: hover) {
+  .ruleta-cerrar:hover {
+    background: var(--rojo);
+  }
+}
+
+.ruleta-cerrar:active {
+  transform: scale(0.92);
+}
+
+/* ---------- La rueda ---------- */
+.ruleta-caja {
+  position: relative;
+  width: min(86vw, 360px);
+  aspect-ratio: 1;
+  margin: 26px auto 24px;
+  transform: scale(0.88);
+  transition: transform 0.5s var(--ease-rebote);
+}
+
+.ruleta.abierta .ruleta-caja {
+  transform: none;
+}
+
+/* luz roja detrás de la rueda */
+.ruleta-caja::before {
+  content: '';
+  position: absolute;
+  inset: -14%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--rojo-rgb) / 0.55), rgb(var(--rojo-rgb) / 0.15) 60%, transparent);
+  pointer-events: none;
+}
+
+.con-movimiento .ruleta-caja::before {
+  animation: ruleta-luz 2.4s ease-in-out infinite;
+}
+
+.ruleta.girando .ruleta-caja::before {
+  animation-duration: 0.6s;
+}
+
+@keyframes ruleta-luz {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.ruleta-aro,
+.ruleta-rueda {
+  position: absolute;
+  overflow: visible;
+}
+
+.ruleta-aro {
+  inset: 0;
+  filter: drop-shadow(0 20px 30px rgb(0 0 0 / 0.7));
+}
+
+/* el disco que gira, dentro del aro */
+.ruleta-rueda {
+  inset: 4%;
+  width: 92%;
+  height: 92%;
+  will-change: transform;
+}
+
+/* foto del premio en su gajo, con sombra para despegarla del color */
+.ruleta-foto {
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.55));
+}
+
+.ruleta-separador {
+  stroke: rgb(255 255 255 / 0.28);
+  stroke-width: 0.7;
+}
+
+.ruleta-texto1 {
+  fill: #fff;
+  font: italic 900 7px var(--fuente-display);
+  letter-spacing: 0.01em;
+  text-anchor: end;
+}
+
+.ruleta-texto2 {
+  fill: rgb(255 255 255 / 0.78);
+  font: 700 4.2px var(--fuente);
+  letter-spacing: 0.05em;
+  text-anchor: end;
+}
+
+/* bombitas del aro: titilan alternadas (y más rápido mientras gira) */
+.ruleta-bombilla {
+  fill: #ffd76a;
+  opacity: 0.35;
+}
+
+.con-movimiento .ruleta-bombilla {
+  animation: ruleta-bombilla 1.1s steps(1) infinite;
+}
+
+.con-movimiento .ruleta-bombilla.impar {
+  animation-delay: -0.55s;
+}
+
+.ruleta.girando .ruleta-bombilla {
+  animation-duration: 0.28s;
+}
+
+.ruleta.girando .ruleta-bombilla.impar {
+  animation-delay: -0.14s;
+}
+
+@keyframes ruleta-bombilla {
+  50% {
+    opacity: 1;
+  }
+}
+
+.ruleta-centro {
+  position: absolute;
+  inset: 40.5%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgb(255 255 255 / 0.16);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #34343b, #0a0a0b 75%);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.7), 0 0 0 4px rgb(var(--rojo-rgb) / 0.35);
+}
+
+.ruleta-centro img {
+  width: 74%;
+  height: auto;
+}
+
+/* puntero arriba: triángulo rojo con borde blanco que "golpea" en cada gajo (ruleta.js) */
+.ruleta-puntero {
+  position: absolute;
+  top: -3%;
+  left: 50%;
+  z-index: 2;
+  width: 34px;
+  height: 42px;
+  margin-left: -17px;
+  transform-origin: 50% 18%;
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.6));
+}
+
+.ruleta-puntero::before,
+.ruleta-puntero::after {
+  content: '';
+  position: absolute;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+.ruleta-puntero::before {
+  inset: 0;
+  background: #fff;
+}
+
+.ruleta-puntero::after {
+  inset: 4px 5px 7px;
+  background: var(--rojo);
+}
+
+/* ---------- Botón y premio ---------- */
+.ruleta-accion {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  min-height: 60px;
+}
+
+.ruleta-accion .btn {
+  min-width: min(100%, 280px);
+}
+
+.ruleta-girar {
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+}
+
+.con-movimiento .ruleta-girar:not(:disabled) {
+  animation: ruleta-latido 1.3s ease-in-out infinite;
+}
+
+.ruleta-girar:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+@keyframes ruleta-latido {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.ruleta-premio {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgb(var(--rojo-rgb) / 0.55);
+  border-radius: 20px;
+  background: linear-gradient(120deg, rgb(var(--rojo-rgb) / 0.25), rgb(255 255 255 / 0.04) 70%);
+  box-shadow: 0 16px 40px -18px rgb(var(--rojo-rgb) / 0.9);
+  text-align: left;
+}
+
+.con-movimiento .ruleta-premio.nuevo {
+  animation: ruleta-premio 0.6s var(--ease-rebote);
+}
+
+@keyframes ruleta-premio {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+.ruleta-premio-foto {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  padding: 6px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 40%, #2e2e35, #141416);
+  color: var(--rojo-vivo);
+}
+
+.ruleta-premio-foto {
+  overflow: hidden;
+}
+
+.ruleta-premio-foto img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.ruleta-premio-foto .icono {
+  width: 38px;
+  height: 38px;
+}
+
+.ruleta-premio-texto {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ruleta-premio-texto small {
+  color: var(--rojo-vivo);
+  font: italic 900 0.8rem/1 var(--fuente-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ruleta-premio-texto b {
+  font: italic 900 1.3rem/1.05 var(--fuente-display);
+  font-stretch: 110%;
+  text-transform: uppercase;
+}
+
+.ruleta-premio-texto span {
+  color: var(--gris);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ruleta-nota {
+  margin: 0;
+  color: var(--gris);
+  font-size: 0.9rem;
+}
+
+/* "Listo": secundario, debajo de "Girar otra vez" */
+.ruleta-listo {
+  padding: 6px 10px;
+  color: var(--gris);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ruleta-listo:hover {
+  color: var(--blanco);
+}
+
+/* ---------- Confeti al ganar ---------- */
+.ruleta-confeti {
+  position: fixed;
+  top: 42%;
+  left: 50%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.ruleta-confeti span {
+  position: absolute;
+  width: 8px;
+  height: 12px;
+  opacity: 0;
+  animation: ruleta-confeti var(--t) var(--d) cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes ruleta-confeti {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(calc(var(--x) * 0.6), var(--y)) rotate(calc(var(--g) * 0.4));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), calc(var(--y) + var(--caida))) rotate(var(--g));
+  }
+}
+
+html:not(.con-movimiento) .ruleta,
+html:not(.con-movimiento) .ruleta-caja {
+  transition: none;
+}
+
+/* ---------- En el carrito ---------- */
+/* Ruedita dibujada con CSS: gajos rojos y negros que giran despacio */
+.ruedita {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border: 3px solid #2a2a30;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--rojo) 0 25.72deg, #141416 0 51.43deg);
+  box-shadow: 0 0 0 1px rgb(var(--rojo-rgb) / 0.6), 0 6px 16px -6px rgb(var(--rojo-rgb) / 0.9);
+}
+
+.ruedita span {
+  position: absolute;
+  inset: 34%;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 50%;
+  background: #0a0a0b;
+}
+
+.con-movimiento .ruedita {
+  animation: ruedita 7s linear infinite;
+}
+
+@keyframes ruedita {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Invitación a jugar, debajo de los productos */
+.ruleta-promo {
+  position: relative;
+  margin: 12px var(--gutter) 0;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--rojo-rgb) / 0.5);
+  border-radius: 18px;
+  background: linear-gradient(115deg, rgb(var(--rojo-rgb) / 0.26), rgb(var(--rojo-rgb) / 0.04) 65%), rgb(255 255 255 / 0.03);
+}
+
+/* brillo que la cruza cada tanto, como en los ganchos */
+.ruleta-promo::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -40%;
+  width: 30%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.18), transparent);
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+
+.con-movimiento .ruleta-promo::after {
+  animation: gancho-brillo 4.5s 0.8s ease-in-out infinite;
+}
+
+.ruleta-promo-cabeza {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Premios que tocaron: uno debajo del otro, con su foto */
+.ruleta-premios-titulo {
+  position: relative;
+  margin: 14px 0 8px;
+  color: var(--rojo-vivo);
+  font: italic 900 0.75rem/1 var(--fuente-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ruleta-premios {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.ruleta-premios li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 12px;
+  background: rgb(10 10 11 / 0.45);
+}
+
+.ruleta-premios-foto {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 3px;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 40%, #2e2e35, #141416);
+  color: var(--rojo-vivo);
+}
+
+.ruleta-premios-foto img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.ruleta-premios-foto .icono {
+  width: 20px;
+  height: 20px;
+}
+
+.ruleta-premios-texto {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.ruleta-premios-texto b {
+  font-size: 0.9rem;
+}
+
+.ruleta-premios-texto small {
+  color: var(--gris);
+  font-size: 0.78rem;
+}
+
+.ruleta-pendiente {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  color: #ffd76a;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.ruleta-pendiente button {
+  color: var(--gris);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ruleta-promo-texto {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ruleta-promo-texto > b {
+  font: italic 900 0.95rem/1.1 var(--fuente-display);
+  font-stretch: 110%;
+  text-transform: uppercase;
+}
+
+.ruleta-promo-texto span {
+  color: var(--gris);
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.ruleta-promo-texto span b {
+  color: var(--blanco);
+}
+
+.ruleta-promo-btn {
+  position: relative;
+  z-index: 1;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--rojo);
+  box-shadow: 0 4px 0 var(--rojo-profundo), 0 10px 22px -8px rgb(var(--rojo-rgb) / 0.8);
+  color: #fff;
+  font: italic 900 0.85rem/1 var(--fuente-display);
+  font-stretch: 110%;
+  text-transform: uppercase;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.ruleta-promo-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--rojo-profundo);
+}
+

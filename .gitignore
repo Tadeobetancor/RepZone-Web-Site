@@ -11,6 +11,7 @@ dist
 
 # Miniaturas: se generan solas al compilar (scripts/miniaturas.mjs)
 /public/productos/400/
+/public/productos/1600/
 
 # Planilla para importar en Google Sheets (una sola vez; después manda la de Google)
 /RepZone-catalogo.xlsx
