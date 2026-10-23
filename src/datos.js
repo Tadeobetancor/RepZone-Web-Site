@@ -76,8 +76,12 @@ export const numero = (v) => {
 const drive = (id, ancho) => `https://drive.google.com/thumbnail?id=${id}&sz=w${ancho}`;
 const idDrive = (url) => url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=|thumbnail\?id=)([\w-]{20,})/)?.[1];
 
+// Versión de las fotos de public/productos: los celulares guardan las fotos un tiempo, así que si se
+// reemplaza una foto con el mismo nombre hay que subir este número para que la vuelvan a bajar.
+const VERSION_FOTOS = '2';
+
 export function rutaFoto(n) {
-  if (!/^https?:/i.test(n)) return `/productos/${n}`;
+  if (!/^https?:/i.test(n)) return `/productos/${n}?v=${VERSION_FOTOS}`;
   const id = idDrive(n);
   return id ? drive(id, 800) : n;
 }
@@ -201,9 +205,15 @@ const columna = (t) => {
 
 // Foto chica (400 px) para tarjetas y listas: pesa menos y el celular la dibuja más rápido.
 // Las genera scripts/miniaturas.mjs; las fotos con link externo se usan tal cual.
+// La misma foto en otra carpeta de tamaño (400/ o 1600/), conservando la versión
+const enCarpeta = (src, carpeta) => {
+  const [ruta, version] = src.split('?');
+  return ruta.replace('/productos/', `/productos/${carpeta}/`).replace(/\.\w+$/, '.webp') + (version ? `?${version}` : '');
+};
+
 export const miniatura = (src) =>
   src.startsWith('/productos/')
-    ? src.replace('/productos/', '/productos/400/').replace(/\.\w+$/, '.webp')
+    ? enCarpeta(src, '400')
     : idDrive(src)
       ? drive(idDrive(src), 400)
       : src;
@@ -211,7 +221,7 @@ export const miniatura = (src) =>
 // Foto grande (1600 px, más nítida) para la foto ampliada de la ficha
 export const fotoGrande = (src) =>
   src.startsWith('/productos/')
-    ? src.replace('/productos/', '/productos/1600/').replace(/\.\w+$/, '.webp')
+    ? enCarpeta(src, '1600')
     : idDrive(src)
       ? drive(idDrive(src), 1600)
       : src;
