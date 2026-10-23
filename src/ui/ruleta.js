@@ -100,17 +100,24 @@ function crear() {
     <button class="ruleta-cerrar" type="button" aria-label="Cerrar ruleta">
       <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
+    <button class="ruleta-volver" type="button" data-ver-premios aria-label="Ver los premios">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
     <div class="ruleta-contenido">
-      <p class="etiqueta">Ruleta RepZone</p>
-      <h2 class="ruleta-titulo" id="ruleta-titulo">Girá y <span class="rojo">ganá</span></h2>
-      <p class="ruleta-bajada"></p>
-      <div class="ruleta-caja"></div>
-      <div class="ruleta-accion" aria-live="polite"></div>
-      <section class="ruleta-lista" aria-labelledby="ruleta-lista-titulo">
-        <h3 class="ruleta-lista-titulo" id="ruleta-lista-titulo">Premios que podés ganar</h3>
+      <section class="ruleta-pantalla ruleta-premios-pantalla" aria-labelledby="ruleta-titulo">
+        <p class="etiqueta">Ruleta RepZone</p>
+        <h2 class="ruleta-titulo" id="ruleta-titulo">Premios que <span class="rojo">podés ganar</span></h2>
+        <p class="ruleta-bajada"></p>
         <ul class="ruleta-lista-premios"></ul>
-        <p class="ruleta-lista-nota">Tocá un premio para verlo en grande.</p>
         <button type="button" class="btn ruleta-lista-jugar" data-ir-jugar>¡Quiero jugar!</button>
+      </section>
+      <section class="ruleta-pantalla ruleta-juego-pantalla" aria-label="Ruleta">
+        <div class="ruleta-cartel" aria-hidden="true">
+          <span class="ruleta-cartel-chico">★ Ruleta ★</span>
+          <span class="ruleta-cartel-grande">RepZone</span>
+        </div>
+        <div class="ruleta-caja"></div>
+        <div class="ruleta-accion" aria-live="polite"></div>
       </section>
     </div>
     <div class="ruleta-confeti" aria-hidden="true"></div>`;
@@ -130,11 +137,9 @@ function crear() {
       return girar();
     }
     if (e.target.closest('[data-girar]')) girar();
-    // desde la lista de premios: sube a la rueda para jugar
-    if (e.target.closest('[data-ir-jugar]')) {
-      el('.ruleta-titulo').scrollIntoView({ behavior: conMovimiento() ? 'smooth' : 'auto', block: 'start' });
-      setTimeout(() => el('.ruleta-accion .btn')?.focus({ preventScroll: true }), 400);
-    }
+    // de la pantalla de premios a la de juego, y vuelta
+    if (e.target.closest('[data-ir-jugar]')) return mostrar('juego');
+    if (e.target.closest('[data-ver-premios]') && !girando) return mostrar('premios');
     const ver = e.target.closest('[data-ver-premio]');
     if (ver) {
       const p = ruletaActual.premios[ver.dataset.verPremio];
@@ -159,7 +164,7 @@ function crear() {
 function rehacer() {
   N = ruletaActual.premios.length;
   A = 360 / N;
-  el('.ruleta-bajada').innerHTML = `Sumá un giro a tu pedido por <b>${formatoPrecio(ruletaActual.precio)}</b>. ¡Siempre te llevás un premio!`;
+  el('.ruleta-bajada').innerHTML = `Cada giro: <b>${formatoPrecio(ruletaActual.precio)}</b>. ¡Siempre te llevás uno! Tocá un premio para verlo en grande.`;
   el('.ruleta-caja').innerHTML = rueda();
   el('.ruleta-lista-premios').innerHTML = listaPremios();
 }
@@ -265,8 +270,16 @@ function confeti() {
   setTimeout(() => (capa.innerHTML = ''), 2800);
 }
 
+// ---------- Pantallas: premios o juego ----------
+function mostrar(pantalla) {
+  caja.dataset.pantalla = pantalla;
+  caja.scrollTop = 0;
+  const destino = pantalla === 'juego' ? el('.ruleta-accion .btn') : el('[data-ir-jugar]');
+  destino?.focus({ preventScroll: true });
+}
+
 // ---------- Abrir y cerrar ----------
-// verPremios: abre mostrando la lista de premios (desde "Ver posibles premios" del carrito)
+// verPremios: abre en la pantalla de premios (desde "Ver posibles premios" del carrito); si no, en la de juego
 export async function abrirRuleta({ verPremios = false } = {}) {
   await cargarRuleta();
   if (!caja) crear();
@@ -289,12 +302,8 @@ export async function abrirRuleta({ verPremios = false } = {}) {
   empujado = true;
   abierta = true;
   caja.hidden = false;
-  caja.scrollTop = 0;
-  requestAnimationFrame(() => {
-    caja.classList.add('abierta');
-    if (verPremios) el('.ruleta-lista').scrollIntoView({ block: 'start' });
-  });
-  el('.ruleta-accion .btn')?.focus({ preventScroll: true });
+  mostrar(verPremios ? 'premios' : 'juego');
+  requestAnimationFrame(() => caja.classList.add('abierta'));
 }
 
 export function cerrarRuleta() {
