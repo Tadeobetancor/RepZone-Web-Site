@@ -1,19 +1,20 @@
-import { RULETA } from '../config.js';
 import { ruleta } from '../carrito.js';
-import { formatoPrecio, fotoGrande } from '../datos.js';
+import { formatoPrecio, fotoGrande, miniatura } from '../datos.js';
+import { cargarRuleta, ruletaActual } from '../ruleta-datos.js';
 import { panelAbierto } from './panel.js';
 import { abrirZoom } from './zoom.js';
 
 // Ruleta del carrito: se abre sobre el carrito, se suma el giro al pedido y se gira (las veces que se quiera).
-// El premio lo elige carrito.js (ruleta.girar) según los pesos de config.js; acá solo se anima
-// la rueda para que frene en ese premio. Se cierra con la X, Escape o el botón "atrás".
-const N = RULETA.premios.length;
-const A = 360 / N;
+// Los premios, sus fotos y sus códigos vienen de la pestaña Ruleta de la planilla (ruleta-datos.js).
+// El premio lo elige carrito.js (ruleta.girar); acá solo se anima la rueda para que frene en ese premio.
+// Se cierra con la X, Escape o el botón "atrás".
 const conMovimiento = () => document.documentElement.classList.contains('con-movimiento');
 const escapar = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const el = (sel) => caja.querySelector(sel);
 
 let caja;
+let N = 0; // cantidad de premios (gajos)
+let A = 0; // grados de cada gajo
 let abierta = false;
 let empujado = false;
 let girando = false;
@@ -30,8 +31,9 @@ const punto = (r, grados) => {
 };
 
 function rueda() {
-  const colores = RULETA.premios.map((_, i) => (N % 2 && i === N - 1 ? 'var(--rojo-profundo)' : i % 2 ? '#141416' : 'var(--rojo)'));
-  const gajos = RULETA.premios
+  const premios = ruletaActual.premios;
+  const colores = premios.map((_, i) => (N % 2 && i === N - 1 ? 'var(--rojo-profundo)' : i % 2 ? '#141416' : 'var(--rojo)'));
+  const gajos = premios
     .map((p, i) => {
       // el gajo i queda centrado en i·A grados (0 = arriba, sentido horario)
       const desde = i * A - A / 2;
@@ -41,7 +43,7 @@ function rueda() {
       // ver .ruleta-foto-giro); sin foto, el nombre
       const contenido = p.foto
         ? `<g transform="rotate(${i * A}) translate(0 -58)"><g class="ruleta-foto-giro" style="--g:${i * A}deg">
-            <image href="/productos/400/${p.foto}" x="-17" y="-21" width="34" height="42" preserveAspectRatio="xMidYMid meet" class="ruleta-foto"/>
+            <image href="${escapar(miniatura(p.foto))}" x="-17" y="-21" width="34" height="42" preserveAspectRatio="xMidYMid meet" class="ruleta-foto"/>
           </g></g>`
         : `<g transform="rotate(${i * A - 90})">
             <text x="87" y="-1.5" class="ruleta-texto1">${escapar(linea1)}</text>
@@ -77,10 +79,10 @@ function rueda() {
 
 // Los premios en detalle, para verlos antes de girar (tocando uno se ve la foto en grande)
 function listaPremios() {
-  return RULETA.premios
+  return ruletaActual.premios
     .map(
       (p, i) => `<li><button type="button" class="ruleta-lista-premio" data-ver-premio="${i}" ${p.foto ? '' : 'disabled'}>
-        <span class="ruleta-lista-foto">${p.foto ? `<img src="/productos/400/${p.foto}" alt="" loading="lazy">` : REGALO}</span>
+        <span class="ruleta-lista-foto">${p.foto ? `<img src="${escapar(miniatura(p.foto))}" alt="" loading="lazy">` : REGALO}</span>
         <b>${escapar(p.nombre)}</b><small>${escapar(p.marca)}</small>
       </button></li>`,
     )
@@ -101,13 +103,14 @@ function crear() {
     <div class="ruleta-contenido">
       <p class="etiqueta">Ruleta RepZone</p>
       <h2 class="ruleta-titulo" id="ruleta-titulo">Girá y <span class="rojo">ganá</span></h2>
-      <p class="ruleta-bajada">Sumá un giro a tu pedido por <b>${formatoPrecio(RULETA.precio)}</b>. ¡Siempre te llevás un premio!</p>
-      <div class="ruleta-caja">${rueda()}</div>
+      <p class="ruleta-bajada"></p>
+      <div class="ruleta-caja"></div>
       <div class="ruleta-accion" aria-live="polite"></div>
       <section class="ruleta-lista" aria-labelledby="ruleta-lista-titulo">
         <h3 class="ruleta-lista-titulo" id="ruleta-lista-titulo">Premios que podés ganar</h3>
-        <ul class="ruleta-lista-premios">${listaPremios()}</ul>
+        <ul class="ruleta-lista-premios"></ul>
         <p class="ruleta-lista-nota">Tocá un premio para verlo en grande.</p>
+        <button type="button" class="btn ruleta-lista-jugar" data-ir-jugar>¡Quiero jugar!</button>
       </section>
     </div>
     <div class="ruleta-confeti" aria-hidden="true"></div>`;
@@ -116,20 +119,26 @@ function crear() {
   caja.addEventListener('click', (e) => {
     if (e.target.closest('.ruleta-cerrar') || e.target.closest('[data-listo]')) return cerrarRuleta();
     if (e.target.closest('[data-comprar]')) {
-      ruleta.comprar();
+      if (ruletaActual.activa) ruleta.comprar();
       return pintarAccion();
     }
     // "Girar otra vez": suma otro giro al pedido y gira de una
     if (e.target.closest('[data-otra]')) {
+      if (!ruletaActual.activa) return;
       ruleta.comprar();
       pintarAccion();
       return girar();
     }
     if (e.target.closest('[data-girar]')) girar();
+    // desde la lista de premios: sube a la rueda para jugar
+    if (e.target.closest('[data-ir-jugar]')) {
+      el('.ruleta-titulo').scrollIntoView({ behavior: conMovimiento() ? 'smooth' : 'auto', block: 'start' });
+      setTimeout(() => el('.ruleta-accion .btn')?.focus({ preventScroll: true }), 400);
+    }
     const ver = e.target.closest('[data-ver-premio]');
     if (ver) {
-      const p = RULETA.premios[ver.dataset.verPremio];
-      abrirZoom(fotoGrande(`/productos/${p.foto}`), `${p.nombre} ${p.marca}`);
+      const p = ruletaActual.premios[ver.dataset.verPremio];
+      abrirZoom(fotoGrande(p.foto), `${p.nombre} ${p.marca}`);
     }
   });
 
@@ -146,8 +155,17 @@ function crear() {
   addEventListener('popstate', () => abierta && !history.state?.ruleta && ((empujado = false), cerrarRuleta()));
 }
 
+// Rueda, lista y precio con los premios actuales (pueden cambiar desde la planilla)
+function rehacer() {
+  N = ruletaActual.premios.length;
+  A = 360 / N;
+  el('.ruleta-bajada').innerHTML = `Sumá un giro a tu pedido por <b>${formatoPrecio(ruletaActual.precio)}</b>. ¡Siempre te llevás un premio!`;
+  el('.ruleta-caja').innerHTML = rueda();
+  el('.ruleta-lista-premios').innerHTML = listaPremios();
+}
+
 // ---------- Botón o resultado, según el estado del giro ----------
-const otraVez = `<button type="button" class="btn" data-otra>Girar otra vez · ${formatoPrecio(RULETA.precio)}</button>`;
+const otraVez = () => `<button type="button" class="btn" data-otra>Girar otra vez · ${formatoPrecio(ruletaActual.precio)}</button>`;
 
 function pintarAccion({ festejo = false } = {}) {
   const accion = el('.ruleta-accion');
@@ -157,24 +175,29 @@ function pintarAccion({ festejo = false } = {}) {
   }
   const premios = ruleta.premios();
   if (festejo) {
-    const p = RULETA.premios[premios[premios.length - 1]];
+    const p = premios[premios.length - 1];
     accion.innerHTML = `
       <div class="ruleta-premio${festejo ? ' nuevo' : ''}">
-        <span class="ruleta-premio-foto">${p.foto ? `<img src="/productos/400/${p.foto}" alt="">` : REGALO}</span>
+        <span class="ruleta-premio-foto">${p.foto ? `<img src="${escapar(miniatura(p.foto))}" alt="">` : REGALO}</span>
         <span class="ruleta-premio-texto">
           <small>¡Te tocó!</small>
           <b>${escapar(p.nombre)}</b>
           <span>${escapar(p.marca)}</span>
+          ${p.codigo ? `<span class="ruleta-codigo">Código <b>${escapar(p.codigo)}</b></span>` : ''}
         </span>
       </div>
-      <p class="ruleta-nota">Va con tu pedido: lo coordinamos por WhatsApp.</p>
-      ${otraVez}
+      <p class="ruleta-nota">Va con tu pedido y su código: lo coordinamos por WhatsApp.</p>
+      ${ruletaActual.activa ? otraVez() : ''}
       <button type="button" class="ruleta-listo" data-listo>Listo, volver al carrito</button>`;
     return;
   }
+  if (!ruletaActual.activa) {
+    accion.innerHTML = '<p class="ruleta-nota">La ruleta no está disponible en este momento.</p>';
+    return;
+  }
   accion.innerHTML = premios.length
-    ? `${otraVez}<p class="ruleta-nota">Ya ganaste ${premios.length === 1 ? 'un premio' : `${premios.length} premios`}: los ves en tu carrito.</p>`
-    : `<button type="button" class="btn" data-comprar>Sumar giro · ${formatoPrecio(RULETA.precio)}</button>`;
+    ? `${otraVez()}<p class="ruleta-nota">Ya ganaste ${premios.length === 1 ? 'un premio' : `${premios.length} premios`}: los ves en tu carrito.</p>`
+    : `<button type="button" class="btn" data-comprar>Sumar giro · ${formatoPrecio(ruletaActual.precio)}</button>`;
 }
 
 // ---------- El giro ----------
@@ -243,14 +266,18 @@ function confeti() {
 }
 
 // ---------- Abrir y cerrar ----------
-export function abrirRuleta() {
+// verPremios: abre mostrando la lista de premios (desde "Ver posibles premios" del carrito)
+export async function abrirRuleta({ verPremios = false } = {}) {
+  await cargarRuleta();
   if (!caja) crear();
+  rehacer();
   focoPrevio = document.activeElement;
-  // la rueda aparece frenada en el último premio que salió
-  const premios = ruleta.premios();
+  // la rueda aparece frenada en el último premio que salió (si sigue en la rueda)
+  const ultimo = ruleta.premios().at(-1);
+  const lugar = ultimo ? ruletaActual.premios.findIndex((p) => p.nombre === ultimo.nombre && p.marca === ultimo.marca) : -1;
   const disco = el('.ruleta-rueda');
   disco.style.transition = 'none';
-  giroActual = premios.length ? -premios[premios.length - 1] * A : 0;
+  giroActual = lugar >= 0 ? -lugar * A : 0;
   disco.style.transform = `rotate(${giroActual}deg)`;
   disco.style.setProperty('--duracion', '0ms');
   disco.style.setProperty('--giro', `${giroActual}deg`);
@@ -262,7 +289,11 @@ export function abrirRuleta() {
   empujado = true;
   abierta = true;
   caja.hidden = false;
-  requestAnimationFrame(() => caja.classList.add('abierta'));
+  caja.scrollTop = 0;
+  requestAnimationFrame(() => {
+    caja.classList.add('abierta');
+    if (verPremios) el('.ruleta-lista').scrollIntoView({ block: 'start' });
+  });
   el('.ruleta-accion .btn')?.focus({ preventScroll: true });
 }
 

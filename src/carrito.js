@@ -1,13 +1,15 @@
 // Carrito: lista de { id, sabor, tamano, cantidad }. Se guarda en el navegador de cada cliente.
 // Los precios no se guardan: siempre se toman del catálogo, así un cambio de precio se ve al instante.
-import { WHATSAPP, RULETA } from './config.js';
+import { WHATSAPP } from './config.js';
 import { formatoPrecio } from './datos.js';
+import { ruletaActual } from './ruleta-datos.js';
 
 const CLAVE = 'repzone-carrito';
 const CLAVE_RULETA = 'repzone-ruleta';
 const oyentes = new Set();
 let items = leer();
-// Ruleta: lista de giros del pedido, cada uno { premio } (índice en RULETA.premios; null = todavía sin girar)
+// Ruleta: lista de giros del pedido, cada uno { premio }: null = todavía sin girar, o el premio que tocó
+// guardado entero ({ nombre, marca, codigo, foto }), así un cambio en la planilla no cambia lo que ya se ganó
 let giros = leerGiros();
 
 function leer() {
@@ -22,7 +24,7 @@ function leer() {
 function leerGiros() {
   try {
     const g = JSON.parse(localStorage.getItem(CLAVE_RULETA) || '[]');
-    return Array.isArray(g) ? g.filter((x) => x && (x.premio === null || Number.isInteger(x.premio))) : [];
+    return Array.isArray(g) ? g.filter((x) => x && (x.premio === null || (typeof x.premio === 'object' && x.premio.nombre))) : [];
   } catch {
     return [];
   }
@@ -69,12 +71,12 @@ export const carrito = {
   },
 };
 
-// Ruleta: cada giro se suma al pedido por RULETA.precio y siempre toca un premio.
+// Ruleta: cada giro se suma al pedido por el precio de la planilla y siempre toca un premio.
 // Se puede girar las veces que se quiera; los premios quedan en el pedido.
 export const ruleta = {
   cantidad: () => giros.length,
   pendientes: () => giros.filter((g) => g.premio === null).length,
-  // índices de los premios que ya salieron, en orden
+  // premios que ya salieron, en orden: { nombre, marca, codigo, foto }
   premios: () => giros.filter((g) => g.premio !== null).map((g) => g.premio),
   comprar() {
     giros.push({ premio: null });
@@ -86,22 +88,24 @@ export const ruleta = {
     if (i >= 0) giros.splice(i, 1);
     guardar();
   },
-  // Elige el premio según los pesos y lo guarda antes de la animación (cerrar a mitad no cambia nada)
+  // Elige el premio según los pesos y lo guarda antes de la animación (cerrar a mitad no cambia nada).
+  // Devuelve su lugar en la rueda.
   girar() {
     const giro = giros.find((g) => g.premio === null);
     if (!giro) return null;
-    const pesos = RULETA.premios.map((p) => p.peso);
+    const pesos = ruletaActual.premios.map((p) => p.peso);
     const total = pesos.reduce((s, w) => s + w, 0);
     const azar = (crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32) * total;
     let i = 0;
     for (let acumulado = pesos[0]; azar >= acumulado && i < pesos.length - 1; acumulado += pesos[++i]);
-    giro.premio = i;
+    const { nombre, marca, codigo, foto } = ruletaActual.premios[i];
+    giro.premio = { nombre, marca, codigo, foto };
     guardar();
     return i;
   },
 };
 
-export const totalPedido = (ls) => ls.reduce((s, l) => s + l.subtotal, 0) + giros.length * RULETA.precio;
+export const totalPedido = (ls) => ls.reduce((s, l) => s + l.subtotal, 0) + giros.length * ruletaActual.precio;
 
 // Precio de una línea: el del tamaño elegido o el del producto
 export function precioDe(producto, tamano) {
@@ -136,9 +140,8 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
     const sabor = textoSabor(l.producto, l.sabor);
     return `• ${l.cantidad}x ${l.producto.nombre}${detalle ? ` (${detalle})` : ''}${sabor ? ` — Sabor: ${sabor}` : ''} — ${formatoPrecio(l.subtotal)}`;
   });
-  ruleta.premios().forEach((i) => {
-    const premio = RULETA.premios[i];
-    renglones.push(`• Giro de ruleta — ${formatoPrecio(RULETA.precio)} — Premio: ${premio.nombre} (${premio.marca})`);
+  ruleta.premios().forEach((p) => {
+    renglones.push(`• Giro de ruleta — ${formatoPrecio(ruletaActual.precio)} — Premio: ${p.nombre} (${p.marca})${p.codigo ? ` — Código: ${p.codigo}` : ''}`);
   });
   const partes = [
     '¡Hola RepZone! Quiero hacer este pedido:',

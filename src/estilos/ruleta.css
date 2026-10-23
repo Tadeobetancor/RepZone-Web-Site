@@ -439,6 +439,32 @@
   font-size: 0.8rem;
 }
 
+/* Código del premio (va en el mensaje de WhatsApp) */
+.ruleta-codigo {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border: 1px dashed rgb(255 255 255 / 0.4);
+  border-radius: 8px;
+  background: rgb(10 10 11 / 0.5);
+  color: var(--gris);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+
+.ruleta-codigo b {
+  margin-left: 4px;
+  color: #ffd76a;
+  font: italic 900 0.95rem/1 var(--fuente-display);
+  letter-spacing: 0.06em;
+}
+
+/* "¡Quiero jugar!" al final de la lista de premios */
+.ruleta-lista-jugar {
+  margin-top: 16px;
+  min-width: min(100%, 280px);
+}
+
 /* "Listo": secundario, debajo de "Girar otra vez" */
 .ruleta-listo {
   padding: 6px 10px;
@@ -620,6 +646,26 @@ html:not(.con-movimiento) .ruleta-caja {
 .ruleta-premios-texto small {
   color: var(--gris);
   font-size: 0.78rem;
+}
+
+.ruleta-premios-codigo {
+  flex: none;
+  margin-left: auto;
+  padding: 3px 8px;
+  border: 1px dashed rgb(255 215 106 / 0.6);
+  border-radius: 8px;
+  color: #ffd76a;
+  font: italic 900 0.8rem/1 var(--fuente-display);
+  letter-spacing: 0.06em;
+}
+
+/* "Ver posibles premios": texto más largo, en dos renglones si hace falta */
+.ruleta-promo-btn.ver-premios {
+  max-width: 120px;
+  padding: 9px 12px;
+  font-size: 0.78rem;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .ruleta-pendiente {

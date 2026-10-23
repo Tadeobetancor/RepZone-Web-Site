@@ -8,7 +8,7 @@
 // Planilla simple del cliente (desde el 23/10/2026).
 // Vacío = se usa public/catalogo.csv.
 export const PLANILLA_CSV =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxTNI6E53meRBrGwxcxKyEOUsoZ36bvad9jcCXksYWCSpi7U10F4YZuR8ZsAm6VJBIe64I9Dg-RRnt/pub?gid=1931374867&single=true&output=csv';
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxTNI6E53meRBrGwxcxKyEOUsoZ36bvad9jcCXksYWCSpi7U10F4YZuR8ZsAm6VJBIe64I9Dg-RRnt/pub?gid=363050236&single=true&output=csv';
 const RESPALDO = '/catalogo.csv';
 const ESPERA_MAXIMA = 4000; // si Google tarda más, se muestra la última copia y no se hace esperar al cliente
 const CLAVE_COPIA = 'repzone-catalogo';
@@ -63,9 +63,9 @@ async function leer(url, signal) {
   return r.text();
 }
 
-const si = (v) => /^(si|sí|s|x|1|true)$/i.test(String(v).trim());
+export const si = (v) => /^(si|sí|s|x|1|true)$/i.test(String(v).trim());
 const lista = (v, separador = '|') => String(v || '').split(separador).map((s) => s.trim()).filter(Boolean);
-const numero = (v) => {
+export const numero = (v) => {
   const n = Number(String(v).replace(/[^\d]/g, ''));
   return n > 0 ? n : null;
 };
@@ -76,7 +76,7 @@ const numero = (v) => {
 const drive = (id, ancho) => `https://drive.google.com/thumbnail?id=${id}&sz=w${ancho}`;
 const idDrive = (url) => url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=|thumbnail\?id=)([\w-]{20,})/)?.[1];
 
-function rutaFoto(n) {
+export function rutaFoto(n) {
   if (!/^https?:/i.test(n)) return `/productos/${n}`;
   const id = idDrive(n);
   return id ? drive(id, 800) : n;
@@ -136,8 +136,8 @@ function normalizar(f) {
   };
 }
 
-// CSV con comillas, comas y saltos de línea dentro de los campos
-export function parsearCSV(texto) {
+// CSV con comillas, comas y saltos de línea dentro de los campos → filas no vacías (listas de celdas)
+export function filasCSV(texto) {
   texto = texto.replace(/^﻿/, '');
   const filas = [];
   let fila = [];
@@ -164,7 +164,12 @@ export function parsearCSV(texto) {
     } else campo += c;
   }
   if (campo || fila.length) filas.push([...fila, campo]);
-  const llenas = filas.filter((f) => f.some((c) => c.trim()));
+  return filas.filter((f) => f.some((c) => c.trim()));
+}
+
+// Productos de la planilla: un objeto por fila, con las columnas por nombre
+export function parsearCSV(texto) {
+  const llenas = filasCSV(texto);
   // la fila de nombres de columna es la primera que tiene la del producto y la del precio
   // (arriba puede haber un título o ayudas)
   const i = llenas.findIndex((f) => f.map(columna).includes('nombre') && f.map(columna).includes('precio'));

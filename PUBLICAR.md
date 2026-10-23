@@ -28,4 +28,3 @@ apuntar el dominio. El certificado HTTPS se genera solo.
 
 Los cambios de precios y stock **no** requieren volver a publicar: salen de la planilla.
 
-(También quedó `netlify.toml` por si algún día se prefiere Netlify.)

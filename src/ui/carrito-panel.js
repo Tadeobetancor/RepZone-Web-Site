@@ -1,6 +1,6 @@
 import { cargarCatalogo, formatoPrecio, miniatura } from '../datos.js';
 import { carrito, lineas, mensajeWhatsApp, linkPedido, textoSabor, ruleta, totalPedido } from '../carrito.js';
-import { RULETA } from '../config.js';
+import { cargarRuleta, ruletaActual } from '../ruleta-datos.js';
 import { abrirPanel, cerrarPanel } from './panel.js';
 import { abrirRuleta } from './ruleta.js';
 
@@ -38,6 +38,7 @@ export async function iniciarCarrito() {
   contador();
   catalogo = await cargarCatalogo();
   contador();
+  cargarRuleta().then(() => !el('carrito').hidden && pintar());
 
   const panel = el('carrito');
   panel.addEventListener('click', (e) => {
@@ -49,7 +50,8 @@ export async function iniciarCarrito() {
     if (b.dataset.menos) carrito.cambiar(Number(b.dataset.menos), carrito.items()[b.dataset.menos].cantidad - 1);
     if (b.dataset.quitar) quitar(b, () => carrito.quitar(Number(b.dataset.quitar)));
     if (b.hasAttribute('data-quitar-ruleta')) ruleta.quitarPendiente();
-    if (b.hasAttribute('data-ruleta')) abrirRuleta();
+    // sin giros todavía: abre mostrando los posibles premios; con giros, directo a la rueda
+    if (b.hasAttribute('data-ruleta')) abrirRuleta({ verPremios: !ruleta.cantidad() });
     if (b.dataset.entrega) {
       datos.entrega = b.dataset.entrega;
       guardarDatos();
@@ -180,12 +182,15 @@ function lineaProducto(l) {
 
 const REGALO = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v10H4zM3 7h18v4H3zM12 7v14M12 7S10.5 3 8 3a2 2 0 0 0 0 4M12 7s1.5-4 4-4a2 2 0 0 1 0 4"/></svg>`;
 
-// Tarjeta de la ruleta, debajo de los productos: invita a jugar y, una vez que se giró,
-// muestra los giros, su costo y todos los premios que tocaron
+// Tarjeta de la ruleta, debajo de los productos: invita a ver los premios y, una vez que se giró,
+// muestra los giros, su costo y todos los premios que tocaron (con su código).
+// Con la ruleta desactivada en la planilla no aparece (salvo que ya haya giros en el pedido).
 function tarjetaRuleta() {
   const n = ruleta.cantidad();
   const pendientes = ruleta.pendientes();
   const premios = ruleta.premios();
+  if (!ruletaActual.activa && !n) return '';
+  const boton = pendientes ? '¡Girar!' : n ? (ruletaActual.activa ? 'Otra vez' : '') : 'Ver posibles premios';
   return `
     <div class="ruleta-promo${premios.length ? ' con-premios' : ''}" data-entra>
       <div class="ruleta-promo-cabeza">
@@ -194,21 +199,21 @@ function tarjetaRuleta() {
           <b>Ruleta RepZone</b>
           <span>${
             n
-              ? `${n} ${n === 1 ? 'giro' : 'giros'} · <b>${formatoPrecio(n * RULETA.precio)}</b>`
-              : `Sumá un giro por ${formatoPrecio(RULETA.precio)} y llevate un premio seguro.`
+              ? `${n} ${n === 1 ? 'giro' : 'giros'} · <b>${formatoPrecio(n * ruletaActual.precio)}</b>`
+              : `Sumá un giro por ${formatoPrecio(ruletaActual.precio)} y llevate un premio seguro.`
           }</span>
         </div>
-        <button type="button" class="ruleta-promo-btn" data-ruleta>${pendientes ? '¡Girar!' : n ? 'Otra vez' : 'Jugar'}</button>
+        ${boton ? `<button type="button" class="ruleta-promo-btn${n ? '' : ' ver-premios'}" data-ruleta>${boton}</button>` : ''}
       </div>
       ${
         premios.length
           ? `<p class="ruleta-premios-titulo">${premios.length === 1 ? 'Te tocó' : 'Te tocaron'}</p>
         <ul class="ruleta-premios">${premios
-          .map((i) => {
-            const p = RULETA.premios[i];
-            return `<li><span class="ruleta-premios-foto">${p.foto ? `<img src="/productos/400/${p.foto}" alt="">` : REGALO}</span>
-              <span class="ruleta-premios-texto"><b>${escapar(p.nombre)}</b><small>${escapar(p.marca)}</small></span></li>`;
-          })
+          .map(
+            (p) => `<li><span class="ruleta-premios-foto">${p.foto ? `<img src="${escapar(miniatura(p.foto))}" alt="">` : REGALO}</span>
+              <span class="ruleta-premios-texto"><b>${escapar(p.nombre)}</b><small>${escapar(p.marca)}</small></span>
+              ${p.codigo ? `<span class="ruleta-premios-codigo">${escapar(p.codigo)}</span>` : ''}</li>`,
+          )
           .join('')}</ul>`
           : ''
       }
