@@ -6,7 +6,7 @@ Los productos de la web salen de una planilla de Google. Lo que cambies ahí se 
 ## Armar la planilla (una sola vez)
 
 1. Entrá a [Google Sheets](https://sheets.google.com) con la cuenta de RepZone y creá una planilla nueva.
-2. **Archivo › Importar › Subir** y elegí `RepZone-catalogo.xlsx` (está en esta carpeta).
+2. **Archivo › Importar › Subir** y elegí `RepZone-catalogo.xlsx` (está en la carpeta `planillas`).
    En "Ubicación" elegí **Reemplazar hoja de cálculo**. Queda armada con colores, una sección por categoría,
    listas desplegables y una pestaña **Cómo usar** con la ayuda para el cliente.
 3. **Archivo › Compartir › Publicar en la Web**: elegí la pestaña **Productos** (no "Todo el documento"),
@@ -82,7 +82,7 @@ con el mismo formato que Productos: las localidades agrupadas bajo filas de zona
 
 ### Armar la pestaña (una sola vez)
 
-1. En la planilla, **Archivo › Importar › Subir** y elegí `RepZone-envios.xlsx` (está en esta carpeta, ya trae
+1. En la planilla, **Archivo › Importar › Subir** y elegí `RepZone-envios.xlsx` (está en la carpeta `planillas`, ya trae
    las localidades, los colores y los desplegables). En "Ubicación" elegí **Insertar hojas nuevas**.
 2. **Archivo › Compartir › Publicar en la Web**: elegí la pestaña **🚚 Envíos**, formato **.csv** y **Publicar**.
 3. Pegá ese link en `src/envios-datos.js`, en `ENVIOS_CSV`, y subí el cambio.
@@ -98,6 +98,7 @@ Hasta que la pestaña esté publicada, la web usa la lista de `public/envios.csv
 4. Pegá ese link en la columna **Fotos** del producto. La web lo convierte sola y pide el tamaño justo
    (chica en el catálogo, grande en la foto ampliada).
 
-Consejo: las fotos se ven mucho mejor **sin fondo** (PNG o WEBP transparente) y de 800 px o más.
+Consejo: las fotos se ven mucho mejor **sin fondo** (PNG o WEBP transparente), **cuadradas** (mismo ancho que alto)
+y de **1600 × 1600 px** (mínimo 800 × 800). Con el producto centrado y sin mucho espacio vacío alrededor.
 Si una foto tiene fondo blanco, se va a ver el recuadro blanco sobre el fondo oscuro de la web:
 pasásela a Desde Cero para recortarla.
