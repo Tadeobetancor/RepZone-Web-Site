@@ -1,4 +1,4 @@
-import { CATEGORIAS, CLIENTES, DESDE_CERO, INSTAGRAM, REELS } from '../config.js';
+import { CATEGORIAS, CLIENTES, DESDE_CERO, INSTAGRAM, REELS, linkWhatsApp } from '../config.js';
 
 const IG = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"/></svg>`;
 const CAMARA = `<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
@@ -18,6 +18,23 @@ function clientes() {
       Array.from({ length: 6 }, (_, i) => `<figure class="cliente cliente-vacio tono-${i % 3}">${CAMARA}<figcaption>Tu foto<br>acá</figcaption></figure>`);
   const tira = fotos.join('');
   return `<div class="clientes-pista"><div class="clientes-tramo">${tira}</div><div class="clientes-tramo" aria-hidden="true">${tira}</div></div>`;
+}
+
+// Invitación a la comunidad, debajo de las fotos: caritas de clientes, el texto y el ícono de Instagram.
+// Toda la tarjeta lleva a la cuenta.
+function comunidad() {
+  const caras = CLIENTES.slice(0, 3)
+    .map((f) => `<img src="/clientes/${f}" alt="" loading="lazy" decoding="async">`)
+    .join('');
+  return `
+    <a class="comunidad" href="${INSTAGRAM}" target="_blank" rel="noopener">
+      ${caras ? `<span class="comunidad-caras" aria-hidden="true">${caras}</span>` : ''}
+      <span class="comunidad-texto">
+        <b>Unite a la comunidad</b>
+        <small>Etiquetanos y aparecé acá</small>
+      </span>
+      <span class="comunidad-ig">${IG}</span>
+    </a>`;
 }
 
 const VUELTA_SEGUNDOS = 70; // lo que tarda la tira en dar una vuelta entera sola
@@ -152,32 +169,49 @@ export function iniciarPie() {
         <h2 class="titulo-seccion" id="clientes-titulo">Los que <span class="rojo">entrenan</span> con nosotros</h2>
       </div>
       <div class="clientes-carrusel">${clientes()}</div>
-      <div class="clientes-accion">
-        <a class="btn btn-claro clientes-ig" href="${INSTAGRAM}" target="_blank" rel="noopener">${IG}<span>Etiquetanos en @repzone.arg</span></a>
-      </div>
+      <div class="clientes-accion">${comunidad()}</div>
     </section>
 
-    <div class="contenedor pie-cuerpo">
-      <img class="pie-logo" src="/logo-repzone.png" alt="RepZone" width="960" height="398" loading="lazy">
-      <nav aria-label="Categorías">
-        <ul class="pie-links">
-          <li><a href="#combos">Combos</a></li>
-          <li><a href="#ofertas">Ofertas</a></li>
-          ${CATEGORIAS.map((c) => `<li><a href="#categoria/${c.id}">${c.nombre}</a></li>`).join('')}
-        </ul>
-      </nav>
+    <div class="pie-mapa">
+      <div class="contenedor pie-cuerpo">
+        <div class="pie-marca">
+          <img class="pie-logo" src="/logo-repzone.png" alt="RepZone" width="960" height="398" loading="lazy">
+          <p>Suplementos deportivos. Envío gratis en Hurlingham.</p>
+        </div>
+        <nav class="pie-columnas" aria-label="Pie de página">
+          <div class="pie-columna pie-columna-categorias">
+            <h3>Categorías</h3>
+            <ul>${CATEGORIAS.map((c) => `<li><a href="#categoria/${c.id}">${c.nombre}</a></li>`).join('')}</ul>
+          </div>
+          <div class="pie-columna">
+            <h3>Tienda</h3>
+            <ul>
+              <li><a href="#productos">Catálogo completo</a></li>
+              <li><a href="#combos">Combos</a></li>
+              <li><a href="#ofertas">Ofertas</a></li>
+            </ul>
+          </div>
+          <div class="pie-columna">
+            <h3>Contacto</h3>
+            <ul>
+              <li><a href="${linkWhatsApp()}" target="_blank" rel="noopener">WhatsApp</a></li>
+              <li><a href="${INSTAGRAM}" target="_blank" rel="noopener">Instagram</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
     </div>
 
     <div class="pie-final">
       <div class="contenedor pie-final-fila">
         <p class="pie-legal">© ${anio} RepZone. Precios en pesos argentinos, sujetos a cambios.</p>
-        <p class="desdecero">
-          <span class="desdecero-rotulo">Diseño web</span>
-          <a class="desdecero-logo" href="${DESDE_CERO.instagramAgencia}" target="_blank" rel="noopener" aria-label="Desde Cero en Instagram">
-            <img src="/${DESDE_CERO.logo}" alt="Desde Cero" width="520" height="286" loading="lazy">
-          </a>
-          <a class="desdecero-ig" href="${DESDE_CERO.instagram}" target="_blank" rel="noopener">${DESDE_CERO.usuario}</a>
-        </p>
+        <a class="desdecero" href="${DESDE_CERO.instagram}" target="_blank" rel="noopener">
+          <img src="/${DESDE_CERO.logo}" alt="Desde Cero" width="520" height="286" loading="lazy">
+          <span class="desdecero-texto">
+            <span class="desdecero-rotulo">Diseño web</span>
+            <span class="desdecero-ig">${DESDE_CERO.usuario}</span>
+          </span>
+        </a>
       </div>
     </div>`;
   iniciarCarruselClientes();

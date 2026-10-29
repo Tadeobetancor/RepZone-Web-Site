@@ -52,8 +52,7 @@ export const CLIENTES = Array.from({ length: 12 }, (_, i) => `cliente-${String(i
 // Firma de la agencia al final del pie
 export const DESDE_CERO = {
   logo: 'logo-desdecero.png',
-  // el logo lleva a la cuenta de la agencia; el usuario, a la del diseñador
-  instagramAgencia: 'https://www.instagram.com/desdecero.labs/',
-  instagram: 'https://www.instagram.com/tadeobetancor_/',
-  usuario: '@tadeobetancor_',
+  // el crédito entero (logo, "Diseño web" y el usuario) lleva a la cuenta de la agencia
+  instagram: 'https://www.instagram.com/desdecero.labs/',
+  usuario: '@desdecero.labs',
 };

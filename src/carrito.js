@@ -3,6 +3,7 @@
 import { WHATSAPP } from './config.js';
 import { formatoPrecio } from './datos.js';
 import { ruletaActual } from './ruleta-datos.js';
+import { envioDe, textoCosto } from './envios-datos.js';
 
 const CLAVE = 'repzone-carrito';
 const CLAVE_RULETA = 'repzone-ruleta';
@@ -133,8 +134,12 @@ export function textoSabor(producto, sabor) {
   return 'único';
 }
 
+// El envío elegido con su costo (null si es retiro o todavía no eligió la localidad)
+export const envioPedido = ({ entrega, zona }) => (entrega === 'envio' && zona ? envioDe(zona) : null);
+
 export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
-  const total = totalPedido(ls);
+  const envio = envioPedido({ entrega, zona });
+  const total = totalPedido(ls) + (envio?.costo ?? 0);
   const renglones = ls.map((l) => {
     const detalle = [l.producto.marca, l.tamano].filter(Boolean).join(' · ');
     const sabor = textoSabor(l.producto, l.sabor);
@@ -143,16 +148,17 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
   ruleta.premios().forEach((p) => {
     renglones.push(`• Giro de ruleta — ${formatoPrecio(ruletaActual.precio)} — Premio: ${p.nombre} (${p.marca})${p.codigo ? ` — Código: ${p.codigo}` : ''}`);
   });
+  if (envio) renglones.push(`• Envío a ${envio.nombre} — ${envio.costo === null ? 'a cotizar' : textoCosto(envio.costo)}`);
   const partes = [
     '¡Hola RepZone! Quiero hacer este pedido:',
     '',
     ...renglones,
     '',
-    `*Total: ${formatoPrecio(total)}*`,
-    entrega === 'envio' ? 'Entrega: Envío (a cotizar)' : 'Entrega: Retiro en el centro de distribución',
+    `*Total: ${formatoPrecio(total)}*${envio?.costo === null ? ' + envío a cotizar' : ''}`,
+    entrega === 'envio' ? 'Entrega: Envío a domicilio' : 'Entrega: Retiro en el centro de distribución',
   ];
   if (entrega === 'envio') {
-    if (zona) partes.push(`Barrio/localidad: ${zona.trim()}`);
+    if (zona) partes.push(`Localidad: ${zona.trim()}`);
     if (domicilio) partes.push(`Domicilio: ${domicilio.trim()}`);
   }
   if (nombre) partes.push(`Nombre: ${nombre}`);

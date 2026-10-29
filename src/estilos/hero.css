@@ -38,6 +38,64 @@
   gap: 12px 18px;
 }
 
+/* "Ver catálogo completo": termina con una flecha blanca que rebota e invita a bajar */
+.btn-catalogo {
+  position: relative;
+  overflow: hidden;
+  padding-right: 0.75em;
+  font-size: clamp(0.88rem, 4vw, 1rem);
+  white-space: nowrap;
+}
+
+.btn-catalogo-flecha {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 0 rgb(0 0 0 / 0.25);
+  color: var(--rojo);
+}
+
+.btn-catalogo-flecha .icono {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.6;
+}
+
+/* brillo que lo cruza cada tanto, como en los ganchos */
+.btn-catalogo::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -40%;
+  width: 30%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+
+.con-movimiento .btn-catalogo::after {
+  animation: gancho-brillo 4s 1.5s ease-in-out infinite;
+}
+
+.con-movimiento .btn-catalogo-flecha .icono {
+  animation: catalogo-flecha 1.4s ease-in-out infinite;
+}
+
+@keyframes catalogo-flecha {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
 /* Celular: los combos tienen que verse en la primera pantalla.
    Título arriba, carrusel en el medio y el botón debajo. */
 @media (max-width: 899px) {

@@ -18,8 +18,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: var(--wa);
   box-shadow:
@@ -41,8 +41,8 @@
 .wa-fab-boton::before {
   border: 1px solid rgb(255 255 255 / 0.16);
   background: rgb(255 255 255 / 0.06);
-  -webkit-mask: radial-gradient(circle, transparent 30px, #000 30.5px);
-  mask: radial-gradient(circle, transparent 30px, #000 30.5px);
+  -webkit-mask: radial-gradient(circle, transparent 28px, #000 28.5px);
+  mask: radial-gradient(circle, transparent 28px, #000 28.5px);
 }
 
 .wa-fab-boton::after {
@@ -55,8 +55,8 @@
 }
 
 .wa-fab svg {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   fill: #fff;
 }
 

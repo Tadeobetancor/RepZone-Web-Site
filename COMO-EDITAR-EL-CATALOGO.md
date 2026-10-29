@@ -61,6 +61,34 @@ Si un sabor sale sin color o con uno que no te gusta, escribí el color al lado 
 - **Producto nuevo:** agregá una fila dentro de su sección y completá al menos Producto, Marca, Categoría,
   Precio, ¿Hay stock? y Fotos. El código se arma solo.
 
+## Envíos: localidades y precios
+
+Cuando el cliente elige **Envío** en el carrito, busca su localidad en una lista y ve cuánto sale.
+El costo se suma al total y va en el mensaje de WhatsApp. La lista sale de la pestaña **🚚 Envíos** de la planilla,
+con el mismo formato que Productos: las localidades agrupadas bajo filas de zona (🏠 HURLINGHAM, 🌇 ZONA OESTE…).
+
+| 📍 Localidad | 🚚 Envío (desplegable) | 💲 Precio |
+| --- | --- | --- |
+| Villa Tesei | Gratis | |
+| Castelar | Con precio | $3.500 |
+| Palermo | A cotizar | |
+
+- **Envío:** se elige de la lista: `Gratis`, `Con precio` o `A cotizar`. El precio solo se completa con `Con precio`
+  (en las otras opciones la celda se ve gris). `Con precio` sin precio cuenta como a cotizar.
+- **Localidad nueva:** escribila en una fila debajo de su zona (al final hay filas vacías listas). **Sacar una:** borrá la fila.
+- **Zona nueva:** una fila con el nombre en MAYÚSCULAS y Envío vacío (copiá el formato de otra zona).
+- Si alguien vive en una localidad que no está en la lista, igual puede escribirla y hacer el pedido:
+  le aparece el envío "a cotizar".
+
+### Armar la pestaña (una sola vez)
+
+1. En la planilla, **Archivo › Importar › Subir** y elegí `RepZone-envios.xlsx` (está en esta carpeta, ya trae
+   las localidades, los colores y los desplegables). En "Ubicación" elegí **Insertar hojas nuevas**.
+2. **Archivo › Compartir › Publicar en la Web**: elegí la pestaña **🚚 Envíos**, formato **.csv** y **Publicar**.
+3. Pegá ese link en `src/envios-datos.js`, en `ENVIOS_CSV`, y subí el cambio.
+
+Hasta que la pestaña esté publicada, la web usa la lista de `public/envios.csv` (Hurlingham gratis y el resto a cotizar).
+
 ## Fotos (sin depender de nadie)
 
 1. En Google Drive, una sola vez: creá una carpeta "Fotos RepZone" › **Compartir** › Acceso general:

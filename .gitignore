@@ -2,14 +2,8 @@ node_modules
 dist
 .DS_Store
 
-# Material de trabajo, no forma parte de la web
-/clientes/
-/fotos/
-/referencias/
-/pagina en html/
-/pagina vieja de repzone/
-/fotos ruleta/
-/fotos productos/
+# El video del reel es un proyecto aparte, no forma parte de la web
+/video/
 
 # Miniaturas: se generan solas al compilar (scripts/miniaturas.mjs)
 /public/productos/400/
@@ -18,3 +12,8 @@ dist
 # Planilla para importar en Google Sheets (una sola vez; después manda la de Google)
 /RepZone-catalogo.xlsx
 /RepZone-catalogo-simple.xlsx
+/RepZone-envios.xlsx
+/RepZone-como-usar-envios.xlsx
+
+# Material de trabajo, no forma parte de la web
+/referencias/

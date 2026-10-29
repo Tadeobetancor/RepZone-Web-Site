@@ -581,12 +581,13 @@ html:not(.con-movimiento) .particulas span {
   border: 1px solid var(--vidrio-borde);
   border-radius: 18px;
   background: rgb(255 255 255 / 0.04);
-  transition: opacity 0.22s, transform 0.22s var(--ease);
 }
 
+/* la transición va solo al quitar: puesta siempre, frenaba la entrada en bloques y la ruleta aparecía antes */
 .linea.saliendo {
   opacity: 0;
   transform: translateX(30px);
+  transition: opacity 0.22s, transform 0.22s var(--ease);
 }
 
 .linea > img {
@@ -791,6 +792,134 @@ html:not(.con-movimiento) .particulas span {
   background: rgb(var(--rojo-rgb) / 0.12);
 }
 
+/* Buscador de localidades: se escribe y la lista se despliega debajo, con el costo de envío de cada una */
+.localidad {
+  display: grid;
+  gap: 4px;
+}
+
+.localidad-caja {
+  position: relative;
+}
+
+.carrito-campos .localidad-caja input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.localidad-caja .icono {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  color: var(--gris);
+  pointer-events: none;
+  transition: rotate 0.2s var(--ease);
+}
+
+.localidad-caja:has([aria-expanded='true']) .icono {
+  rotate: 180deg;
+}
+
+.localidad-lista {
+  max-height: 248px;
+  margin-top: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 14px;
+  background: var(--negro-2);
+}
+
+.localidad-lista li[role='option'] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.localidad-lista li[role='option']:last-child {
+  border-bottom: 0;
+}
+
+.localidad-lista li[role='option']:hover,
+.localidad-lista li[aria-selected='true'] {
+  background: rgb(var(--rojo-rgb) / 0.14);
+}
+
+/* título de cada zona, queda arriba mientras se recorre su lista */
+.localidad-zona {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 14px 6px;
+  background: #1d1d21;
+  color: var(--rojo-vivo);
+  font: italic 900 0.7rem/1 var(--fuente-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.localidad-vacia {
+  padding: 16px 14px;
+  color: var(--gris);
+  text-align: center;
+}
+
+.localidad-lista .localidad-costo {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  color: var(--blanco);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.localidad-lista .localidad-costo.gratis {
+  background: rgb(74 222 128 / 0.16);
+  color: #4ade80;
+}
+
+.localidad-lista .localidad-costo.cotizar {
+  color: var(--gris);
+  font-weight: 600;
+}
+
+/* Pie del paso 2: el envío arriba del total */
+.carrito-envio {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: -4px;
+  color: var(--gris);
+  font-size: 0.9rem;
+}
+
+.carrito-envio span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.carrito-envio b {
+  flex: none;
+  color: var(--blanco);
+}
+
+.carrito-envio b.gratis {
+  color: #4ade80;
+}
+
 .carrito-total {
   display: flex;
   align-items: baseline;
@@ -805,10 +934,69 @@ html:not(.con-movimiento) .particulas span {
 
 .btn-wa,
 .btn-confirmar {
+  position: relative;
   width: 100%;
 }
 
-/* Carrito en dos pasos: indicador arriba, 1 · Tu pedido → 2 · Entrega */
+/* la flecha de Confirmar compra empuja hacia adelante */
+.btn-confirmar .icono {
+  transition: translate 0.2s var(--ease);
+}
+
+.btn-confirmar:hover .icono {
+  translate: 4px 0;
+}
+
+/* Al tocar Confirmar compra o Enviar pedido: el botón rebota y suelta una onda */
+.btn.festeja::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.con-movimiento .btn.festeja {
+  animation: festeja 0.42s var(--ease);
+}
+
+.con-movimiento .btn.festeja::after {
+  animation: festeja-onda 0.55s ease-out;
+}
+
+.con-movimiento .btn-confirmar.festeja .icono {
+  animation: flecha-sale 0.3s ease-in forwards;
+}
+
+@keyframes festeja {
+  0% {
+    transform: translateY(5px) scale(0.97);
+    box-shadow: 0 1px 0 var(--sombra), 0 6px 14px -6px var(--brillo);
+  }
+  55% {
+    transform: translateY(-2px) scale(1.03);
+  }
+}
+
+@keyframes festeja-onda {
+  from {
+    box-shadow: 0 0 0 0 var(--fondo);
+    opacity: 0.9;
+  }
+  to {
+    box-shadow: 0 0 0 16px var(--fondo);
+    opacity: 0;
+  }
+}
+
+@keyframes flecha-sale {
+  to {
+    translate: 40px 0;
+    opacity: 0;
+  }
+}
+
+/* Carrito en dos pasos: arriba, 1 · Tu pedido → 2 · Entrega. Se tocan para ir y volver */
 .carrito-pasos {
   display: flex;
   gap: 8px;
@@ -820,14 +1008,24 @@ html:not(.con-movimiento) .particulas span {
 .carrito-pasos li {
   flex: 1;
   display: flex;
+}
+
+.carrito-pasos button {
+  flex: 1;
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding-bottom: 9px;
+  padding: 4px 0 9px;
   border-bottom: 2px solid rgb(255 255 255 / 0.12);
   color: var(--gris-2);
   font: 700 0.78rem/1 var(--fuente);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.carrito-pasos button:hover {
+  color: var(--blanco);
 }
 
 .carrito-pasos span {
@@ -840,17 +1038,24 @@ html:not(.con-movimiento) .particulas span {
   font-size: 0.72rem;
 }
 
-.carrito-pasos li[aria-current] {
+.carrito-pasos .icono {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
+}
+
+.carrito-pasos button[aria-current] {
   border-color: var(--rojo);
   color: var(--blanco);
 }
 
-.carrito-pasos li[aria-current] span {
+.carrito-pasos button[aria-current] span {
   background: var(--rojo);
 }
 
-.carrito-pasos li.hecho {
+.carrito-pasos li.hecho button {
   border-color: rgb(var(--rojo-rgb) / 0.4);
+  color: var(--gris);
 }
 
 .carrito-pasos li.hecho span {
@@ -878,31 +1083,7 @@ html:not(.con-movimiento) .particulas span {
 .carrito-entrega {
   display: grid;
   gap: 16px;
-  padding: 14px var(--gutter) 22px;
-}
-
-.carrito-volver {
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 0;
-  color: var(--gris);
-  font-weight: 700;
-}
-
-.carrito-volver .icono {
-  width: 18px;
-  height: 18px;
-}
-
-.carrito-volver small {
-  color: var(--gris-2);
-  font-weight: 600;
-}
-
-.carrito-volver:hover {
-  color: var(--blanco);
+  padding: 16px var(--gutter) 22px;
 }
 
 .btn-wa svg {

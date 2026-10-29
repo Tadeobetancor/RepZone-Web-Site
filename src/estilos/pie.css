@@ -202,20 +202,87 @@
   padding-top: clamp(40px, 7vw, 64px);
 }
 
-/* El botón de Instagram va debajo de las fotos */
+/* Invitación a la comunidad debajo de las fotos: una tarjeta con caritas de clientes que lleva a Instagram */
 .clientes-accion {
   display: flex;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 26px;
   padding-inline: var(--gutter);
 }
 
-.clientes-ig {
-  min-height: 46px;
-  font-size: 0.8rem;
+.comunidad {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 440px);
+  padding: 12px 14px;
+  border: 1px solid rgb(var(--rojo-rgb) / 0.35);
+  border-radius: 20px;
+  background: linear-gradient(115deg, rgb(var(--rojo-rgb) / 0.16), rgb(255 255 255 / 0.03) 70%);
+  box-shadow: 0 18px 40px -24px rgb(var(--rojo-rgb) / 0.7);
+  transition: transform 0.2s var(--ease), border-color 0.2s;
 }
 
-.clientes-ig .icono {
+.comunidad:hover {
+  transform: translateY(-2px);
+  border-color: rgb(var(--rojo-rgb) / 0.7);
+}
+
+.comunidad:active {
+  transform: scale(0.98);
+}
+
+/* caritas superpuestas, cada una con un aro del color del fondo */
+.comunidad-caras {
+  display: flex;
+  flex: none;
+}
+
+.comunidad-caras img {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--negro-2);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comunidad-caras img + img {
+  margin-left: -12px;
+}
+
+.comunidad-texto {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+  line-height: 1.2;
+}
+
+.comunidad-texto b {
+  font: italic 900 clamp(0.7rem, 2.9vw, 0.95rem) / 1.1 var(--fuente-display);
+  font-stretch: 110%;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.comunidad-texto small {
+  color: var(--gris);
+  font-size: 0.78rem;
+}
+
+/* ícono con los colores de Instagram */
+.comunidad-ig {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+  color: #fff;
+}
+
+.comunidad-ig .icono {
   width: 20px;
   height: 20px;
 }
@@ -342,35 +409,85 @@
   background: linear-gradient(160deg, #26262b, #141416);
 }
 
-/* Cuerpo del pie: logo y categorías en una sola franja liviana */
+/* Cuerpo del pie: el logo arriba y los links en columnas con título, sobre una grilla de puntitos */
+.pie-mapa {
+  margin-top: clamp(40px, 7vw, 64px);
+  border-top: 1px solid var(--vidrio-borde);
+  background: radial-gradient(circle, rgb(255 255 255 / 0.09) 1px, transparent 1.6px) 0 0 / 22px 22px;
+}
+
 .pie-cuerpo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px 40px;
-  padding-block: 32px 26px;
+  display: grid;
+  gap: 30px;
+  padding-block: 36px 40px;
+}
+
+.pie-marca p {
+  max-width: 30ch;
+  margin: 12px 0 0;
+  color: var(--gris);
+  font-size: 0.9rem;
 }
 
 .pie-logo {
-  width: 110px;
+  width: 150px;
   height: auto;
 }
 
-.pie-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-  font-size: 0.88rem;
+/* en celular: Categorías a la izquierda, Tienda y Contacto apilados a la derecha */
+.pie-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* la primera fila se ajusta a Tienda, así Contacto queda justo debajo */
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'categorias tienda'
+    'categorias contacto';
+  align-items: start;
+  gap: 28px 20px;
 }
 
-.pie-links a {
-  color: var(--gris);
-  transition: color 0.2s;
+.pie-columna-categorias {
+  grid-area: categorias;
 }
 
-.pie-links a:hover {
+.pie-columna h3 {
+  margin: 0 0 14px;
   color: var(--blanco);
+  font: italic 900 0.85rem/1 var(--fuente-display);
+  font-stretch: 115%;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pie-columna ul {
+  display: grid;
+  gap: 4px;
+}
+
+.pie-columna a {
+  display: inline-block;
+  padding-block: 6px;
+  color: var(--gris);
+  font-size: 0.95rem;
+  transition: color 0.2s, translate 0.2s var(--ease);
+}
+
+.pie-columna a:hover {
+  color: var(--blanco);
+  translate: 3px 0;
+}
+
+@media (min-width: 800px) {
+  .pie-cuerpo {
+    grid-template-columns: minmax(220px, 1fr) 2fr;
+    padding-block: 52px 56px;
+  }
+
+  .pie-columnas {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: 'categorias tienda contacto';
+  }
 }
 
 /* Barra final: legal a la izquierda, crédito del diseño a la derecha (en celular, uno debajo del otro) */
@@ -386,7 +503,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px 24px;
+  gap: 14px 24px;
   /* en celular deja libre el lugar del botón de WhatsApp */
   padding-right: 76px;
 }
@@ -401,44 +518,40 @@
   margin: 0;
 }
 
+/* Crédito: primero el logo de Desde Cero y al lado "Diseño web" con el usuario debajo */
 .desdecero {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin: 0;
-}
-
-.desdecero-rotulo,
-.desdecero-logo,
-.desdecero-ig {
-  opacity: 0.7;
+  gap: 10px;
+  opacity: 0.75;
   transition: opacity 0.2s;
 }
 
-.desdecero-logo:hover,
-.desdecero-ig:hover {
+.desdecero:hover {
   opacity: 1;
 }
 
-.desdecero-logo {
-  display: block;
-}
-
-.desdecero-rotulo {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .desdecero img {
-  width: 46px;
+  width: 58px;
   height: auto;
 }
 
-.desdecero-ig {
-  padding-left: 8px;
+.desdecero-texto {
+  display: grid;
+  gap: 3px;
+  padding-left: 10px;
   border-left: 1px solid rgb(255 255 255 / 0.18);
+  line-height: 1;
+}
+
+.desdecero-rotulo {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.desdecero-ig {
   color: var(--gris);
   font-weight: 600;
 }

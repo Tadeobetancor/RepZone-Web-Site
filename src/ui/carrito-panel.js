@@ -1,5 +1,6 @@
-import { cargarCatalogo, formatoPrecio, miniatura } from '../datos.js';
-import { carrito, lineas, mensajeWhatsApp, linkPedido, textoSabor, ruleta, totalPedido } from '../carrito.js';
+import { cargarCatalogo, formatoPrecio, miniatura, normalizarTexto } from '../datos.js';
+import { carrito, envioPedido, lineas, mensajeWhatsApp, linkPedido, textoSabor, ruleta, totalPedido } from '../carrito.js';
+import { buscarLocalidades, cargarEnvios, textoCosto } from '../envios-datos.js';
 import { cargarRuleta, ruletaActual } from '../ruleta-datos.js';
 import { abrirPanel, cerrarPanel } from './panel.js';
 import { abrirRuleta } from './ruleta.js';
@@ -39,13 +40,20 @@ export async function iniciarCarrito() {
   catalogo = await cargarCatalogo();
   contador();
   cargarRuleta().then(() => !el('carrito').hidden && pintar());
+  // con la lista de localidades ya cargada, se actualiza el costo del envío (o la lista, si está buscando)
+  cargarEnvios().then(() => {
+    if (el('carrito').hidden || paso !== 'entrega') return;
+    if (document.activeElement?.matches('[data-localidad]')) listarLocalidades(document.activeElement.value);
+    else pintar();
+  });
 
   const panel = el('carrito');
   panel.addEventListener('click', (e) => {
     const b = e.target.closest(
-      '[data-mas], [data-menos], [data-quitar], [data-quitar-ruleta], [data-ruleta], [data-entrega], [data-vaciar], [data-seguir], [data-confirmar], [data-volver]',
+      '[data-mas], [data-menos], [data-quitar], [data-quitar-ruleta], [data-ruleta], [data-entrega], [data-vaciar], [data-seguir], [data-confirmar], [data-ir], [data-localidad-opcion]',
     );
     if (!b) return;
+    if (b.dataset.localidadOpcion) return elegirLocalidad(b.dataset.localidadOpcion);
     if (b.dataset.mas) carrito.cambiar(Number(b.dataset.mas), carrito.items()[b.dataset.mas].cantidad + 1);
     if (b.dataset.menos) carrito.cambiar(Number(b.dataset.menos), carrito.items()[b.dataset.menos].cantidad - 1);
     if (b.dataset.quitar) quitar(b, () => carrito.quitar(Number(b.dataset.quitar)));
@@ -63,14 +71,21 @@ export async function iniciarCarrito() {
       cerrarPanel();
       if (vacio) setTimeout(() => el('productos').scrollIntoView({ behavior: 'smooth' }), 450);
     }
-    if (b.hasAttribute('data-confirmar')) {
-      // antes de pasar a la entrega, el giro comprado tiene que estar girado
-      if (ruleta.pendientes()) return abrirRuleta();
-      irA('entrega');
-    }
-    if (b.hasAttribute('data-volver')) irA('pedido');
+    if (b.hasAttribute('data-confirmar')) confirmar(b);
+    // los pasos de arriba también se tocan: "Tu pedido" vuelve, "Entrega" es como confirmar
+    if (b.dataset.ir === 'pedido' && paso !== 'pedido') irA('pedido');
+    if (b.dataset.ir === 'entrega') confirmar(el('carrito').querySelector('[data-confirmar]'));
   });
   panel.addEventListener('input', (e) => {
+    // buscador de localidades: escribir borra la elegida hasta que se elija otra de la lista
+    if (e.target.matches('[data-localidad]')) {
+      if (datos.zona) {
+        datos.zona = '';
+        guardarDatos();
+        pieEntrega();
+      }
+      return listarLocalidades(e.target.value);
+    }
     const campo = e.target.dataset.campo;
     if (!campo) return;
     datos[campo] = e.target.value.slice(0, 80);
@@ -78,6 +93,23 @@ export async function iniciarCarrito() {
     if (e.target.value.trim()) e.target.removeAttribute('aria-invalid');
     actualizarLink();
   });
+  panel.addEventListener('focusin', (e) => {
+    if (!e.target.matches('[data-localidad]')) return;
+    listarLocalidades(datos.zona ? '' : e.target.value);
+    // en el celular sube el buscador para que la lista quede a la vista arriba del teclado
+    setTimeout(() => e.target.closest('.localidad')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 250);
+  });
+  panel.addEventListener('focusout', (e) => {
+    if (!e.target.matches('[data-localidad]')) return;
+    cerrarLocalidades();
+    // si escribió una localidad de la lista tal cual y se fue sin elegirla, se toma igual
+    const texto = e.target.value.trim();
+    const exacta = texto && buscarLocalidades(texto).find((l) => normalizarTexto(l.nombre) === normalizarTexto(texto));
+    if (!datos.zona && exacta) elegirLocalidad(exacta.nombre);
+  });
+  panel.addEventListener('keydown', (e) => e.target.matches('[data-localidad]') && teclaLocalidad(e));
+  // tocar la lista no le saca el foco al buscador (así no se cierra antes de elegir)
+  panel.addEventListener('pointerdown', (e) => e.target.closest('.localidad-lista') && e.preventDefault());
 }
 
 function contador() {
@@ -113,6 +145,23 @@ function irA(nuevo) {
   contenido?.classList.add(avanza ? 'paso-avanza' : 'paso-vuelve');
 }
 
+// Confirmar compra: el botón se hunde, la flecha sale disparada y recién ahí pasa a la entrega
+function confirmar(boton) {
+  // antes de pasar a la entrega, el giro comprado tiene que estar girado
+  if (ruleta.pendientes()) return abrirRuleta();
+  if (!boton || boton.classList.contains('festeja')) return;
+  festejar(boton);
+  setTimeout(() => irA('entrega'), document.documentElement.classList.contains('con-movimiento') ? 260 : 0);
+}
+
+// Toque que se siente: pulso en el botón y una vibración cortita en el celular
+function festejar(boton) {
+  boton.classList.remove('festeja');
+  void boton.offsetWidth;
+  boton.classList.add('festeja');
+  navigator.vibrate?.(12);
+}
+
 function quitar(boton, accion) {
   boton.closest('.linea').classList.add('saliendo');
   setTimeout(accion, 220);
@@ -133,14 +182,12 @@ function pintar() {
     paso = 'pedido';
     return pintarVacio();
   }
-  el('carrito-titulo').textContent = paso === 'pedido' ? 'Tu pedido' : 'Entrega';
   el('carrito-pie').hidden = false;
   if (paso === 'pedido') pintarPedido(ls);
   else pintarEntrega(ls);
 }
 
 function pintarVacio() {
-  el('carrito-titulo').textContent = 'Tu pedido';
   el('carrito-cuerpo').innerHTML = `
     <div class="carrito-vacio" data-entra>
       <span class="carrito-vacio-icono"><svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg></span>
@@ -152,10 +199,14 @@ function pintarVacio() {
   el('carrito-pie').hidden = true;
 }
 
+const CHECK = '<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const FLECHA = '<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+// Pasos arriba: se tocan para ir y volver (el pedido ya hecho muestra un tilde)
 const pasos = () => `
   <ol class="carrito-pasos" aria-label="Pasos de la compra">
-    <li${paso === 'pedido' ? ' aria-current="step"' : ' class="hecho"'}><span>1</span>Tu pedido</li>
-    <li${paso === 'entrega' ? ' aria-current="step"' : ''}><span>2</span>Entrega</li>
+    <li${paso === 'pedido' ? '' : ' class="hecho"'}><button type="button" data-ir="pedido"${paso === 'pedido' ? ' aria-current="step"' : ''}><span>${paso === 'pedido' ? '1' : CHECK}</span>Tu pedido</button></li>
+    <li><button type="button" data-ir="entrega"${paso === 'entrega' ? ' aria-current="step"' : ''}><span>2</span>Entrega</button></li>
   </ol>`;
 
 // ---------- Paso 1: el pedido ----------
@@ -232,46 +283,50 @@ function pintarPedido(ls) {
       ${pasos()}
       <ul class="lineas">${ls.map(lineaProducto).join('')}</ul>
       ${tarjetaRuleta()}
-      <button type="button" class="carrito-seguir" data-seguir>+ Seguir sumando productos</button>
+      <button type="button" class="carrito-seguir" data-seguir data-entra>+ Seguir sumando productos</button>
     </div>`;
   const falta = ruleta.pendientes() > 0;
   el('carrito-pie').innerHTML = `
-    <div class="carrito-total"><span>Total</span><b>${formatoPrecio(totalPedido(ls))}</b></div>
+    <div class="carrito-total" data-entra><span>Total</span><b>${formatoPrecio(totalPedido(ls))}</b></div>
     <button type="button" class="btn btn-confirmar${falta ? ' falta' : ''}" data-confirmar>
-      ${falta ? 'Girá la ruleta para seguir' : 'Confirmar compra'}
-      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <span>${falta ? 'Girá la ruleta para seguir' : 'Confirmar compra'}</span>${FLECHA}
     </button>
     <button type="button" class="carrito-vaciar" data-vaciar>Vaciar carrito</button>`;
 }
 
 // ---------- Paso 2: la entrega ----------
+const FLECHITA = '<svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+
 function pintarEntrega(ls) {
-  const n = carrito.cantidad();
   el('carrito-cuerpo').innerHTML = `
     <div class="carrito-paso">
       ${pasos()}
       <div class="carrito-entrega">
-        <button type="button" class="carrito-volver" data-volver>
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
-          Volver al pedido <small>(${n} ${n === 1 ? 'producto' : 'productos'})</small>
-        </button>
         <fieldset class="entrega">
           <legend class="ficha-sub">¿Cómo lo recibís?</legend>
           <div class="entrega-opciones">
             <button type="button" class="entrega-opcion" data-entrega="envio" aria-pressed="${datos.entrega === 'envio'}">
               <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7M7.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
-              <b>Envío</b><small>Gratis en Hurlingham. Al resto, te lo cotizamos por WhatsApp</small>
+              <b>Envío</b><small>Gratis en Hurlingham. Al resto, según la localidad</small>
             </button>
             <button type="button" class="entrega-opcion" data-entrega="retiro" aria-pressed="${datos.entrega === 'retiro'}">
               <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
-              <b>Retiro</b><small>Retirá en nuestro centro de distribución</small>
+              <b>Retiro</b><small>En nuestro centro de distribución</small>
             </button>
           </div>
         </fieldset>
         <div class="carrito-campos">
           ${
             datos.entrega === 'envio'
-              ? `<label><span>Barrio o localidad</span><input type="text" data-campo="zona" value="${escapar(datos.zona)}" autocomplete="address-level2" maxlength="80" required placeholder="Ej: Villa Tesei"></label>
+              ? `<div class="localidad">
+            <label for="carrito-localidad"><span>Localidad</span></label>
+            <div class="localidad-caja">
+              <input type="text" id="carrito-localidad" data-localidad value="${escapar(datos.zona)}" placeholder="Buscá tu localidad"
+                role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="carrito-localidades" autocomplete="off" maxlength="80">
+              ${FLECHITA}
+            </div>
+            <ul class="localidad-lista" id="carrito-localidades" role="listbox" aria-label="Localidades" hidden></ul>
+          </div>
           <label><span>Domicilio</span><input type="text" data-campo="domicilio" value="${escapar(datos.domicilio)}" autocomplete="street-address" maxlength="80" required placeholder="Calle, número, piso o depto"></label>`
               : ''
           }
@@ -279,21 +334,111 @@ function pintarEntrega(ls) {
         </div>
       </div>
     </div>`;
+  pieEntrega(ls);
+}
+
+// Pie del paso 2: cuánto sale el envío (si ya eligió localidad), el total con el envío sumado y el botón de WhatsApp
+function pieEntrega(ls = lineas(catalogo)) {
+  const envio = envioPedido(datos);
   el('carrito-pie').innerHTML = `
-    <div class="carrito-total"><span>Total</span><b>${formatoPrecio(totalPedido(ls))}</b></div>
-    <a class="btn btn-wa" id="carrito-enviar" target="_blank" rel="noopener">${WA}<span id="carrito-enviar-texto"></span></a>`;
+    ${
+      envio
+        ? `<div class="carrito-envio"><span>Envío a ${escapar(envio.nombre)}</span><b${envio.costo === 0 ? ' class="gratis"' : ''}>${textoCosto(envio.costo)}</b></div>`
+        : ''
+    }
+    <div class="carrito-total"><span>Total</span><b>${formatoPrecio(totalPedido(ls) + (envio?.costo ?? 0))}</b></div>
+    <a class="btn btn-wa" id="carrito-enviar" target="_blank" rel="noopener"><span id="carrito-enviar-texto"></span>${WA}</a>`;
   el('carrito-enviar').addEventListener('click', (e) => {
-    if (listo()) return;
+    if (listo()) return festejar(e.currentTarget);
     e.preventDefault();
     if (ruleta.pendientes()) return abrirRuleta();
     if (!datos.entrega) return sacudir(el('carrito').querySelector('.entrega'));
     // con envío: se marcan los datos de la dirección que faltan y se va al primero
-    const vacios = faltanDireccion().map((c) => el('carrito').querySelector(`[data-campo="${c}"]`));
+    const vacios = faltanDireccion().map((c) => el('carrito').querySelector(c === 'zona' ? '[data-localidad]' : `[data-campo="${c}"]`));
     vacios.forEach((i) => i.setAttribute('aria-invalid', 'true'));
-    sacudir(vacios[0].closest('label'));
+    sacudir(vacios[0].closest('.localidad, label'));
     vacios[0].focus({ preventScroll: true });
   });
   actualizarLink();
+}
+
+// ---------- Buscador de localidades ----------
+// Se escribe y se filtra la lista; cada localidad muestra su costo de envío. Una que no está en la lista
+// se puede usar igual (va a cotizar). La localidad cuenta recién cuando se elige de la lista.
+function opcionLocalidad(l, i, texto = escapar(l.nombre)) {
+  const clase = l.costo === 0 ? ' gratis' : l.costo === null ? ' cotizar' : '';
+  return `<li role="option" id="localidad-${i}" data-localidad-opcion="${escapar(l.nombre)}" aria-selected="false">
+    <span>${texto}</span><small class="localidad-costo${clase}">${textoCosto(l.costo)}</small></li>`;
+}
+
+function listarLocalidades(texto) {
+  const lista = el('carrito-localidades');
+  if (!lista) return;
+  const resultados = buscarLocalidades(texto);
+  let html = '';
+  if (texto.trim()) {
+    html = resultados.map((l, i) => opcionLocalidad(l, i)).join('');
+    // la que escribió no está tal cual: se puede usar igual, a cotizar
+    const exacta = resultados.some((l) => normalizarTexto(l.nombre) === normalizarTexto(texto));
+    const propia = { nombre: texto.trim(), costo: null };
+    if (!exacta) html += opcionLocalidad(propia, resultados.length, `Usar “${escapar(propia.nombre)}”`);
+  } else {
+    // sin texto: toda la lista, separada por zona
+    let zona = null;
+    resultados.forEach((l, i) => {
+      if (l.zona !== zona) html += `<li class="localidad-zona" role="presentation">${escapar((zona = l.zona))}</li>`;
+      html += opcionLocalidad(l, i);
+    });
+  }
+  lista.innerHTML = html || '<li class="localidad-vacia" role="presentation">Cargando localidades…</li>';
+  lista.hidden = false;
+  lista.scrollTop = 0;
+  const input = el('carrito-localidad');
+  input.setAttribute('aria-expanded', 'true');
+  input.removeAttribute('aria-activedescendant');
+}
+
+function cerrarLocalidades() {
+  const lista = el('carrito-localidades');
+  if (!lista || lista.hidden) return;
+  lista.hidden = true;
+  el('carrito-localidad').setAttribute('aria-expanded', 'false');
+}
+
+function elegirLocalidad(nombre) {
+  datos.zona = nombre;
+  guardarDatos();
+  const input = el('carrito-localidad');
+  input.value = nombre;
+  input.removeAttribute('aria-invalid');
+  cerrarLocalidades();
+  pieEntrega();
+  // sigue con el domicilio si falta; si no, cierra el teclado
+  const domicilio = el('carrito').querySelector('[data-campo="domicilio"]');
+  if (domicilio && !domicilio.value.trim()) domicilio.focus({ preventScroll: true });
+  else input.blur();
+}
+
+// Teclado: flechas para moverse, Enter elige, Escape cierra
+function teclaLocalidad(e) {
+  const lista = el('carrito-localidades');
+  const opciones = [...lista.querySelectorAll('[role="option"]')];
+  const actual = opciones.findIndex((o) => o.getAttribute('aria-selected') === 'true');
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const nuevo = Math.max(0, Math.min(opciones.length - 1, actual + (e.key === 'ArrowDown' ? 1 : -1)));
+    opciones.forEach((o, i) => o.setAttribute('aria-selected', String(i === nuevo)));
+    if (!opciones[nuevo]) return;
+    opciones[nuevo].scrollIntoView({ block: 'nearest' });
+    e.target.setAttribute('aria-activedescendant', opciones[nuevo].id);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const elegida = opciones[actual] ?? opciones[0];
+    if (elegida && !lista.hidden) elegirLocalidad(elegida.dataset.localidadOpcion);
+  } else if (e.key === 'Escape' && !lista.hidden) {
+    e.stopPropagation();
+    cerrarLocalidades();
+  }
 }
 
 function sacudir(f) {
@@ -303,7 +448,7 @@ function sacudir(f) {
   f.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// Con envío hacen falta barrio o localidad y domicilio
+// Con envío hacen falta la localidad (elegida de la lista) y el domicilio
 const faltanDireccion = () => (datos.entrega === 'envio' ? ['zona', 'domicilio'].filter((c) => !datos[c].trim()) : []);
 const listo = () => Boolean(datos.entrega) && !faltanDireccion().length && !ruleta.pendientes();
 
@@ -318,6 +463,8 @@ function actualizarLink() {
       ? 'Girá la ruleta antes de enviar'
       : !datos.entrega
         ? 'Elegí envío o retiro'
-        : 'Completá barrio y domicilio';
+        : faltanDireccion().includes('zona')
+          ? 'Elegí tu localidad'
+          : 'Completá tu domicilio';
   enviar.href = ok ? linkPedido(mensajeWhatsApp(lineas(catalogo), datos)) : '#';
 }
