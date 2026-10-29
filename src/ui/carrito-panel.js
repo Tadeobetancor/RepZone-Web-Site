@@ -48,6 +48,9 @@ export async function iniciarCarrito() {
   });
 
   const panel = el('carrito');
+  // opción de localidad que se está tocando (ver pointerdown/pointerup más abajo)
+  let tocada = null;
+  let elegidaAl = 0;
   panel.addEventListener('click', (e) => {
     const b = e.target.closest(
       '[data-mas], [data-menos], [data-quitar], [data-quitar-ruleta], [data-ruleta], [data-entrega], [data-vaciar], [data-seguir], [data-confirmar], [data-ir], [data-localidad-opcion]',
@@ -101,6 +104,9 @@ export async function iniciarCarrito() {
   });
   panel.addEventListener('focusout', (e) => {
     if (!e.target.matches('[data-localidad]')) return;
+    // el iPhone cierra el teclado (y saca el foco) apenas se toca una opción: la lista sigue abierta
+    // hasta que se suelte el dedo y se elija
+    if (tocada !== null) return;
     cerrarLocalidades();
     // si escribió una localidad de la lista tal cual y se fue sin elegirla, se toma igual
     const texto = e.target.value.trim();
@@ -108,8 +114,38 @@ export async function iniciarCarrito() {
     if (!datos.zona && exacta) elegirLocalidad(exacta.nombre);
   });
   panel.addEventListener('keydown', (e) => e.target.matches('[data-localidad]') && teclaLocalidad(e));
-  // tocar la lista no le saca el foco al buscador (así no se cierra antes de elegir)
-  panel.addEventListener('pointerdown', (e) => e.target.closest('.localidad-lista') && e.preventDefault());
+  // Elegir con el dedo o el mouse: se toma al soltar, sin esperar el click. En el celular el click se
+  // pierde a veces (el teclado redibuja la lista en medio del toque, o el iPhone lo usa para frenar
+  // el desplazamiento). Si el dedo arrastra para recorrer la lista llega pointercancel y no se elige.
+  panel.addEventListener('pointerdown', (e) => {
+    if (!e.target.closest('.localidad-lista')) return;
+    // tocar la lista no le saca el foco al buscador (así no se cierra antes de elegir)
+    e.preventDefault();
+    tocada = e.target.closest('[data-localidad-opcion]')?.dataset.localidadOpcion ?? null;
+  });
+  panel.addEventListener('pointercancel', () => {
+    tocada = null;
+    // si mientras tanto el buscador perdió el foco, la lista ya no tiene por qué quedar abierta
+    if (!document.activeElement?.matches('[data-localidad]')) cerrarLocalidades();
+  });
+  panel.addEventListener('pointerup', (e) => {
+    const nombre = tocada;
+    tocada = null;
+    // soltó fuera de la lista (con el mouse); si la lista se redibujó en el medio, la opción tocada ya no está
+    if (nombre === null || (e.target.isConnected && !e.target.closest('.localidad-lista'))) return;
+    elegidaAl = Date.now();
+    elegirLocalidad(nombre);
+  });
+  // el click que llega después de soltar caería en lo que quedó debajo de la lista ya cerrada
+  panel.addEventListener(
+    'click',
+    (e) => {
+      if (Date.now() - elegidaAl > 600) return;
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    true,
+  );
 }
 
 function contador() {
