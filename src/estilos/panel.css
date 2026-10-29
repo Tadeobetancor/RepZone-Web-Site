@@ -894,6 +894,21 @@ html:not(.con-movimiento) .particulas span {
   font-weight: 600;
 }
 
+/* costo del envío de la localidad elegida, debajo del buscador */
+.localidad-envio {
+  margin-top: 2px;
+  color: var(--gris);
+  font-size: 0.85rem;
+}
+
+.localidad-envio b {
+  color: var(--blanco);
+}
+
+.localidad-envio b.gratis {
+  color: #4ade80;
+}
+
 /* Pie del paso 2: el envío arriba del total */
 .carrito-envio {
   display: flex;

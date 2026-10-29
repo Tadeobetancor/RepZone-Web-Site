@@ -326,6 +326,7 @@ function pintarEntrega(ls) {
               ${FLECHITA}
             </div>
             <ul class="localidad-lista" id="carrito-localidades" role="listbox" aria-label="Localidades" hidden></ul>
+            <p class="localidad-envio" id="carrito-localidad-envio" aria-live="polite" hidden></p>
           </div>
           <label><span>Domicilio</span><input type="text" data-campo="domicilio" value="${escapar(datos.domicilio)}" autocomplete="street-address" maxlength="80" required placeholder="Calle, número, piso o depto"></label>`
               : ''
@@ -340,6 +341,7 @@ function pintarEntrega(ls) {
 // Pie del paso 2: cuánto sale el envío (si ya eligió localidad), el total con el envío sumado y el botón de WhatsApp
 function pieEntrega(ls = lineas(catalogo)) {
   const envio = envioPedido(datos);
+  avisoEnvio(envio);
   el('carrito-pie').innerHTML = `
     ${
       envio
@@ -360,6 +362,21 @@ function pieEntrega(ls = lineas(catalogo)) {
     vacios[0].focus({ preventScroll: true });
   });
   actualizarLink();
+}
+
+// Costo del envío justo debajo de la localidad: en el celular el pie queda tapado por el teclado
+// (al elegir la localidad sigue el domicilio), así se ve en el momento que el envío se sumó
+function avisoEnvio(envio) {
+  const aviso = el('carrito-localidad-envio');
+  if (!aviso) return;
+  aviso.hidden = !envio;
+  if (!envio) return (aviso.innerHTML = '');
+  aviso.innerHTML =
+    envio.costo === null
+      ? 'Envío <b>a cotizar</b>: te pasamos el costo por WhatsApp'
+      : envio.costo === 0
+        ? 'Envío <b class="gratis">gratis</b>'
+        : `Envío <b>${textoCosto(envio.costo)}</b>, ya sumado al total`;
 }
 
 // ---------- Buscador de localidades ----------

@@ -81,7 +81,8 @@ const idDrive = (url) => url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|u
 const VERSION_FOTOS = '2';
 
 export function rutaFoto(n) {
-  if (!/^https?:/i.test(n)) return `/productos/${n}?v=${VERSION_FOTOS}`;
+  // encodeURI: un nombre con espacios ("Pack Body Advance.png") cortaría el srcset en pedazos
+  if (!/^https?:/i.test(n)) return `/productos/${encodeURI(n.trim())}?v=${VERSION_FOTOS}`;
   const id = idDrive(n);
   return id ? drive(id, 800) : n;
 }
@@ -215,7 +216,8 @@ export const miniatura = (src) =>
   src.startsWith('/productos/')
     ? enCarpeta(src, '400')
     : idDrive(src)
-      ? drive(idDrive(src), 400)
+      ? // Drive manda las fotos de menos de ~512 px en JPEG: un PNG sin fondo quedaría con el fondo negro
+        drive(idDrive(src), 600)
       : src;
 
 // Foto grande (1600 px, más nítida) para la foto ampliada de la ficha
