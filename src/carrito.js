@@ -194,7 +194,7 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
   });
   const c = cupon.actual();
   const descuento = descuentoPedido(ls);
-  if (c && descuento) renglones.push(`• Código de descuento ${c.codigo} (${c.porcentaje}% off) — -${formatoPrecio(descuento)}`);
+  if (c && descuento) renglones.push(`• Código de descuento ${c.codigo} (${c.porcentaje}% off)`);
   if (envio) renglones.push(`• Envío a ${envio.nombre} — ${envio.costo === null ? 'a cotizar' : textoCosto(envio.costo)}`);
   const partes = [
     '¡Hola RepZone! Quiero hacer este pedido:',

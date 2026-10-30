@@ -409,7 +409,7 @@ function renglonDescuento(ls) {
   const c = cupon.actual();
   const d = descuentoPedido(ls);
   return c && d
-    ? `<div class="carrito-envio carrito-descuento"><span>Descuento ${escapar(c.codigo)} (${c.porcentaje}%)</span><b class="gratis">-${formatoPrecio(d)}</b></div>`
+    ? `<div class="carrito-envio carrito-descuento"><span>Descuento ${escapar(c.codigo)} (${c.porcentaje}%)</span></div>`
     : '';
 }
 
