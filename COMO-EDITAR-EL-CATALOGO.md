@@ -36,7 +36,7 @@ Las filas de sección (un nombre sin precio) y las filas de título de arriba no
 | `tamaños` | Opcional. Cada tamaño con su precio, separados por `\|` | `1 kg = 76900 \| 2 kg = 139000` |
 | `sabores` | Separados por `\|`. Si querés, un color para el botón | `Chocolate #5A3A22 \| Vainilla` |
 | `fotos` | Un link de Google Drive (ver "Fotos" más abajo), o el nombre de un archivo de `public/productos/`. Varias con `\|` | `https://drive.google.com/file/d/…/view` |
-| `beneficios` | Frases cortas con su ícono, separadas por `\|` | `musculo: Ayuda a ganar músculo \| rapido: Se prepara en segundos` |
+| `beneficios` | Frases cortas con su ícono, separadas por `\|`. Si queda vacía, se muestran las de su categoría (`BENEFICIOS` en `src/config.js`) | `musculo: Ayuda a ganar músculo \| rapido: Se prepara en segundos` |
 | `composicion`, `tabla_nutricional`, `modo_uso` | Texto libre (va en el desplegable de la ficha) | |
 | `oferta` | `SI` para que aparezca en Ofertas | `SI` |
 | `tendencia` | `SI` para destacarlo (tarjeta grande) | `NO` |
@@ -88,6 +88,33 @@ con el mismo formato que Productos: las localidades agrupadas bajo filas de zona
 3. Pegá ese link en `src/envios-datos.js`, en `ENVIOS_CSV`, y subí el cambio.
 
 Hasta que la pestaña esté publicada, la web usa la lista de `public/envios.csv` (Hurlingham gratis y el resto a cotizar).
+
+## Códigos de descuento
+
+El cliente escribe el código en el carrito (paso "Tu pedido") y ve el descuento antes del total.
+Descuenta sobre todos los productos **menos los combos** (tampoco sobre la ruleta ni el envío),
+y el código y el descuento van en el mensaje de WhatsApp del pedido.
+
+Los códigos están en `src/config.js`, en `CUPONES` (no importan las mayúsculas al escribirlo):
+
+```js
+{ codigo: 'Nico5off', porcentaje: 5, atleta: 'Nico' },
+```
+
+### Aviso al atleta
+
+Cuando alguien manda un pedido con su código, al atleta le llega un WhatsApp avisándole. Sale por
+[CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/) (gratis) y hay que activarlo una vez por atleta:
+
+1. El atleta agenda el número de CallMeBot que figura en esa página y le manda por WhatsApp
+   `I allow callmebot to send me messages`. Le contesta con su **apikey** (unos números).
+2. En Vercel: proyecto › **Settings › Environment Variables** › agregar `CALLMEBOT_NICO` (o `CALLMEBOT_CAMI`)
+   con esa apikey, y volver a publicar (**Deployments › Redeploy**).
+3. Su teléfono va en `api/aviso-cupon.js`, en `ATLETAS` (con `+54 9` adelante).
+
+Mientras no esté activado, el código funciona igual: solo no sale el aviso.
+
+**Atleta nuevo:** su código en `CUPONES`, su teléfono en `ATLETAS` y su apikey en Vercel (`CALLMEBOT_` + su nombre).
 
 ## Fotos (sin depender de nadie)
 

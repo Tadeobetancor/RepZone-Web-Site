@@ -34,7 +34,29 @@ export const CATEGORIAS = [
   { id: 'variados', nombre: 'Variados' },
 ];
 
-export const linkWhatsApp = (texto = '¡Hola RepZone! Tengo una consulta.') =>
+// "¿Por qué elegirlo?" de los productos que no tienen beneficios en la planilla, según su categoría.
+// Mismo formato que la columna Beneficios: "ícono: frase".
+export const BENEFICIOS = {
+  proteinas: ['musculo: Ayuda a mantener el músculo', 'recuperacion: Mejor recuperación después de entrenar', 'ahorro: Muy buena calidad-precio'],
+  creatinas: ['fuerza: Más fuerza y potencia', 'energia: Rendís más en cada serie', 'ahorro: Muy buena calidad-precio'],
+  omega3: ['corazon: Aporta omega 3 de calidad', 'salud: Acompaña tu salud todos los días', 'ahorro: Muy buena calidad-precio'],
+  'pre-entrenos': ['energia: Energía para entrenar a full', 'foco: Más concentración en cada serie', 'fuego: Aguantás más repeticiones'],
+  importados: ['calidad: Marcas internacionales', 'energia: Potenciá tu entrenamiento', 'ahorro: Muy buena calidad-precio'],
+  shakers: ['mezcla: Mezcla sin grumos', 'practico: Fácil de llevar', 'limpieza: Fácil de lavar'],
+  alimentos: ['musculo: Snack con proteína', 'rapido: Práctico para cualquier momento', 'sabor: Rico de verdad'],
+  variados: ['calidad: Marcas de confianza', 'salud: Acompaña tu entrenamiento', 'ahorro: Muy buena calidad-precio'],
+  combos: ['ahorro: Ahorrás comprando en pack', 'calidad: Marcas de confianza', 'pack: Todo en un solo pedido'],
+};
+
+// Códigos de descuento: se escriben en el carrito (sin importar mayúsculas) y descuentan sobre todo
+// menos los combos (ni la ruleta ni el envío). Cuando se manda un pedido con el código, el atleta recibe
+// un aviso por WhatsApp: su teléfono va en api/aviso-cupon.js (ver COMO-EDITAR-EL-CATALOGO.md).
+export const CUPONES = [
+  { codigo: 'Cami5off', porcentaje: 5, atleta: 'Cami' },
+  { codigo: 'Nico5off', porcentaje: 5, atleta: 'Nico' },
+];
+
+export const linkWhatsApp =(texto = '¡Hola RepZone! Tengo una consulta.') =>
   `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
 
 

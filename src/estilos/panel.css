@@ -661,6 +661,120 @@ html:not(.con-movimiento) .particulas span {
   color: var(--blanco);
 }
 
+/* Código de descuento, debajo de la ruleta */
+.cupon {
+  display: grid;
+  gap: 6px;
+  margin: 12px var(--gutter) 0;
+}
+
+.cupon label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.cupon-caja {
+  display: flex;
+  gap: 8px;
+}
+
+.cupon input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 12px;
+  outline: 0;
+  background: rgb(255 255 255 / 0.05);
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cupon input::placeholder {
+  color: var(--gris-2);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.cupon input:focus {
+  border-color: var(--rojo);
+}
+
+.cupon input[aria-invalid='true'] {
+  border-color: var(--rojo-vivo);
+  background: rgb(var(--rojo-rgb) / 0.12);
+}
+
+.cupon button[type='submit'] {
+  flex: none;
+  padding: 0 18px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.08);
+  font-weight: 700;
+}
+
+.cupon button[type='submit']:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.cupon-error {
+  color: var(--rojo-vivo);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.cupon-error:empty {
+  display: none;
+}
+
+/* ya aplicado: un renglón verde con el código y Quitar */
+.cupon-aplicado .cupon-caja {
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgb(74 222 128 / 0.4);
+  border-radius: 12px;
+  background: rgb(74 222 128 / 0.08);
+  font-size: 0.9rem;
+}
+
+.cupon-tilde {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #4ade80;
+  color: var(--negro);
+}
+
+.cupon-tilde .icono {
+  width: 15px;
+  height: 15px;
+  stroke-width: 3;
+}
+
+.cupon-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.cupon-quitar {
+  flex: none;
+  color: var(--gris);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cupon-nota {
+  color: var(--gris);
+  font-size: 0.8rem;
+}
+
 .carrito-vacio {
   display: grid;
   justify-items: center;

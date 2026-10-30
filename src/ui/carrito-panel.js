@@ -1,5 +1,5 @@
 import { cargarCatalogo, formatoPrecio, miniatura, normalizarTexto } from '../datos.js';
-import { carrito, envioPedido, lineas, mensajeWhatsApp, linkPedido, textoSabor, ruleta, totalPedido } from '../carrito.js';
+import { carrito, cupon, descuentoPedido, envioPedido, lineas, mensajeWhatsApp, linkPedido, textoSabor, ruleta, totalPedido } from '../carrito.js';
 import { buscarLocalidades, cargarEnvios, textoCosto } from '../envios-datos.js';
 import { cargarRuleta, ruletaActual } from '../ruleta-datos.js';
 import { abrirPanel, cerrarPanel } from './panel.js';
@@ -17,6 +17,11 @@ const RUEDITA = '<span class="ruedita" aria-hidden="true"><span></span></span>';
 
 let catalogo = [];
 let paso = 'pedido';
+// Código de descuento que se está escribiendo (sobrevive a que se redibuje el carrito) y su error
+let cuponEscrito = '';
+let cuponError = '';
+// último pedido con código que ya se avisó al atleta (tocar dos veces Enviar no manda dos avisos)
+let avisado = '';
 // Datos de entrega: se recuerdan para el próximo pedido
 let datos = { entrega: null, nombre: '', zona: '', domicilio: '' };
 try {
@@ -53,7 +58,7 @@ export async function iniciarCarrito() {
   let elegidaAl = 0;
   panel.addEventListener('click', (e) => {
     const b = e.target.closest(
-      '[data-mas], [data-menos], [data-quitar], [data-quitar-ruleta], [data-ruleta], [data-entrega], [data-vaciar], [data-seguir], [data-confirmar], [data-ir], [data-localidad-opcion]',
+      '[data-mas], [data-menos], [data-quitar], [data-quitar-ruleta], [data-ruleta], [data-entrega], [data-vaciar], [data-seguir], [data-confirmar], [data-ir], [data-localidad-opcion], [data-quitar-cupon]',
     );
     if (!b) return;
     if (b.dataset.localidadOpcion) return elegirLocalidad(b.dataset.localidadOpcion);
@@ -61,6 +66,7 @@ export async function iniciarCarrito() {
     if (b.dataset.menos) carrito.cambiar(Number(b.dataset.menos), carrito.items()[b.dataset.menos].cantidad - 1);
     if (b.dataset.quitar) quitar(b, () => carrito.quitar(Number(b.dataset.quitar)));
     if (b.hasAttribute('data-quitar-ruleta')) ruleta.quitarPendiente();
+    if (b.hasAttribute('data-quitar-cupon')) cupon.quitar();
     // sin giros todavía: abre mostrando los posibles premios; con giros, directo a la rueda
     if (b.hasAttribute('data-ruleta')) abrirRuleta({ verPremios: !ruleta.cantidad() });
     if (b.dataset.entrega) {
@@ -79,7 +85,17 @@ export async function iniciarCarrito() {
     if (b.dataset.ir === 'pedido' && paso !== 'pedido') irA('pedido');
     if (b.dataset.ir === 'entrega') confirmar(el('carrito').querySelector('[data-confirmar]'));
   });
+  panel.addEventListener('submit', (e) => {
+    if (!e.target.matches('[data-cupon-form]')) return;
+    e.preventDefault();
+    aplicarCupon();
+  });
   panel.addEventListener('input', (e) => {
+    if (e.target.matches('[data-cupon]')) {
+      cuponEscrito = e.target.value;
+      if (cuponError) mostrarErrorCupon('');
+      return;
+    }
     // buscador de localidades: escribir borra la elegida hasta que se elija otra de la lista
     if (e.target.matches('[data-localidad]')) {
       if (datos.zona) {
@@ -185,6 +201,8 @@ function irA(nuevo) {
 function confirmar(boton) {
   // antes de pasar a la entrega, el giro comprado tiene que estar girado
   if (ruleta.pendientes()) return abrirRuleta();
+  // un código escrito sin tocar Aplicar se aplica ahora; si no vale, se avisa y no se sigue
+  if (cuponEscrito.trim() && !cupon.actual() && !aplicarCupon()) return;
   if (!boton || boton.classList.contains('festeja')) return;
   festejar(boton);
   setTimeout(() => irA('entrega'), document.documentElement.classList.contains('con-movimiento') ? 260 : 0);
@@ -319,15 +337,105 @@ function pintarPedido(ls) {
       ${pasos()}
       <ul class="lineas">${ls.map(lineaProducto).join('')}</ul>
       ${tarjetaRuleta()}
+      ${tarjetaCupon(ls)}
       <button type="button" class="carrito-seguir" data-seguir data-entra>+ Seguir sumando productos</button>
     </div>`;
   const falta = ruleta.pendientes() > 0;
   el('carrito-pie').innerHTML = `
+    ${renglonDescuento(ls)}
     <div class="carrito-total" data-entra><span>Total</span><b>${formatoPrecio(totalPedido(ls))}</b></div>
     <button type="button" class="btn btn-confirmar${falta ? ' falta' : ''}" data-confirmar>
       <span>${falta ? 'Girá la ruleta para seguir' : 'Confirmar compra'}</span>${FLECHA}
     </button>
     <button type="button" class="carrito-vaciar" data-vaciar>Vaciar carrito</button>`;
+}
+
+// ---------- Código de descuento ----------
+// Debajo de la ruleta: se escribe el código y se aplica; ya aplicado, se ve cuánto descuenta y se puede quitar
+function tarjetaCupon(ls) {
+  const c = cupon.actual();
+  if (!c) {
+    return `
+    <form class="cupon" data-cupon-form novalidate data-entra>
+      <label for="carrito-cupon">¿Tenés un código de descuento?</label>
+      <div class="cupon-caja">
+        <input type="text" id="carrito-cupon" data-cupon value="${escapar(cuponEscrito)}" placeholder="Escribí tu código"
+          autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30" enterkeyhint="done"${cuponError ? ' aria-invalid="true"' : ''}
+          aria-describedby="carrito-cupon-error">
+        <button type="submit">Aplicar</button>
+      </div>
+      <p class="cupon-error" id="carrito-cupon-error" aria-live="polite">${escapar(cuponError)}</p>
+    </form>`;
+  }
+  const soloCombos = ls.length && ls.every((l) => l.producto.combo);
+  const hayCombos = ls.some((l) => l.producto.combo);
+  return `
+    <div class="cupon cupon-aplicado" data-entra>
+      <div class="cupon-caja">
+        <span class="cupon-tilde">${CHECK}</span>
+        <span class="cupon-texto"><b>${escapar(c.codigo)}</b> · ${c.porcentaje}% off aplicado</span>
+        <button type="button" class="cupon-quitar" data-quitar-cupon>Quitar</button>
+      </div>
+      ${
+        soloCombos
+          ? '<p class="cupon-nota">El código no aplica a combos: sumá otro producto para usarlo.</p>'
+          : hayCombos
+            ? '<p class="cupon-nota">Los combos no tienen descuento con el código.</p>'
+            : ''
+      }
+    </div>`;
+}
+
+// Aplica lo escrito; devuelve si quedó aplicado
+function aplicarCupon() {
+  const c = cupon.aplicar(cuponEscrito);
+  if (!c) {
+    mostrarErrorCupon(cuponEscrito.trim() ? 'Ese código no existe. Revisalo y probá de nuevo.' : 'Escribí tu código de descuento.');
+    const input = el('carrito-cupon');
+    if (input) {
+      sacudir(input.closest('.cupon'));
+      input.focus({ preventScroll: true });
+    }
+    return false;
+  }
+  cuponEscrito = '';
+  cuponError = '';
+  navigator.vibrate?.(12);
+  // carrito.escuchar redibuja el paso con el código aplicado y el descuento en el total
+  return true;
+}
+
+function mostrarErrorCupon(texto) {
+  cuponError = texto;
+  const error = el('carrito-cupon-error');
+  const input = el('carrito-cupon');
+  if (error) error.textContent = texto;
+  if (input) input.toggleAttribute('aria-invalid', Boolean(texto));
+}
+
+// Renglón del descuento arriba del total (solo si el código descuenta algo)
+function renglonDescuento(ls) {
+  const c = cupon.actual();
+  const d = descuentoPedido(ls);
+  return c && d
+    ? `<div class="carrito-envio carrito-descuento"><span>Descuento ${escapar(c.codigo)} (${c.porcentaje}%)</span><b class="gratis">-${formatoPrecio(d)}</b></div>`
+    : '';
+}
+
+// Al mandar un pedido con código, se le avisa al atleta dueño del código (api/aviso-cupon.js).
+// keepalive: el aviso sale aunque el celular se vaya enseguida a WhatsApp
+function avisarCupon(ls) {
+  const c = cupon.actual();
+  if (!c) return;
+  const pedido = mensajeWhatsApp(ls, datos);
+  if (pedido === avisado) return;
+  avisado = pedido;
+  fetch('/api/aviso-cupon', {
+    method: 'POST',
+    keepalive: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ codigo: c.codigo, total: totalPedido(ls), descuento: descuentoPedido(ls) }),
+  }).catch(() => {});
 }
 
 // ---------- Paso 2: la entrega ----------
@@ -384,10 +492,14 @@ function pieEntrega(ls = lineas(catalogo)) {
         ? `<div class="carrito-envio"><span>Envío a ${escapar(envio.nombre)}</span><b${envio.costo === 0 ? ' class="gratis"' : ''}>${textoCosto(envio.costo)}</b></div>`
         : ''
     }
+    ${renglonDescuento(ls)}
     <div class="carrito-total"><span>Total</span><b>${formatoPrecio(totalPedido(ls) + (envio?.costo ?? 0))}</b></div>
     <a class="btn btn-wa" id="carrito-enviar" target="_blank" rel="noopener"><span id="carrito-enviar-texto"></span>${WA}</a>`;
   el('carrito-enviar').addEventListener('click', (e) => {
-    if (listo()) return festejar(e.currentTarget);
+    if (listo()) {
+      avisarCupon(ls);
+      return festejar(e.currentTarget);
+    }
     e.preventDefault();
     if (ruleta.pendientes()) return abrirRuleta();
     if (!datos.entrega) return sacudir(el('carrito').querySelector('.entrega'));

@@ -1,17 +1,20 @@
 // Carrito: lista de { id, sabor, tamano, cantidad }. Se guarda en el navegador de cada cliente.
 // Los precios no se guardan: siempre se toman del catálogo, así un cambio de precio se ve al instante.
-import { WHATSAPP } from './config.js';
+import { CUPONES, WHATSAPP } from './config.js';
 import { formatoPrecio } from './datos.js';
 import { ruletaActual } from './ruleta-datos.js';
 import { envioDe, textoCosto } from './envios-datos.js';
 
 const CLAVE = 'repzone-carrito';
 const CLAVE_RULETA = 'repzone-ruleta';
+const CLAVE_CUPON = 'repzone-cupon';
 const oyentes = new Set();
 let items = leer();
 // Ruleta: lista de giros del pedido, cada uno { premio }: null = todavía sin girar, o el premio que tocó
 // guardado entero ({ nombre, marca, codigo, foto }), así un cambio en la planilla no cambia lo que ya se ganó
 let giros = leerGiros();
+// Código de descuento aplicado (el código tal cual está en config.js) o ''
+let codigoCupon = leerCupon();
 
 function leer() {
   try {
@@ -31,10 +34,19 @@ function leerGiros() {
   }
 }
 
+function leerCupon() {
+  try {
+    return buscarCupon(localStorage.getItem(CLAVE_CUPON) || '')?.codigo ?? '';
+  } catch {
+    return '';
+  }
+}
+
 function guardar() {
   try {
     localStorage.setItem(CLAVE, JSON.stringify(items));
     localStorage.setItem(CLAVE_RULETA, JSON.stringify(giros));
+    localStorage.setItem(CLAVE_CUPON, codigoCupon);
   } catch {}
   oyentes.forEach((f) => f(items));
 }
@@ -68,6 +80,7 @@ export const carrito = {
   vaciar() {
     items = [];
     giros = [];
+    codigoCupon = '';
     guardar();
   },
 };
@@ -106,7 +119,38 @@ export const ruleta = {
   },
 };
 
-export const totalPedido = (ls) => ls.reduce((s, l) => s + l.subtotal, 0) + giros.length * ruletaActual.precio;
+// Códigos de descuento: el código se compara sin mayúsculas ni espacios
+function buscarCupon(texto) {
+  const t = String(texto).replace(/\s+/g, '').toLowerCase();
+  return t ? CUPONES.find((c) => c.codigo.toLowerCase() === t) : undefined;
+}
+
+export const cupon = {
+  // el aplicado: { codigo, porcentaje, atleta } o null
+  actual: () => buscarCupon(codigoCupon) ?? null,
+  // devuelve el cupón si el código vale; si no, null y queda el que estaba
+  aplicar(texto) {
+    const c = buscarCupon(texto);
+    if (!c) return null;
+    codigoCupon = c.codigo;
+    guardar();
+    return c;
+  },
+  quitar() {
+    codigoCupon = '';
+    guardar();
+  },
+};
+
+// Lo que descuenta el código: su % sobre los productos que no son combos (la ruleta y el envío no cuentan)
+export function descuentoPedido(ls) {
+  const c = cupon.actual();
+  if (!c) return 0;
+  const base = ls.filter((l) => !l.producto.combo).reduce((s, l) => s + l.subtotal, 0);
+  return Math.round((base * c.porcentaje) / 100);
+}
+
+export const totalPedido = (ls) => ls.reduce((s, l) => s + l.subtotal, 0) + giros.length * ruletaActual.precio - descuentoPedido(ls);
 
 // Precio de una línea: el del tamaño elegido o el del producto
 export function precioDe(producto, tamano) {
@@ -148,6 +192,9 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
   ruleta.premios().forEach((p) => {
     renglones.push(`• Giro de ruleta — ${formatoPrecio(ruletaActual.precio)} — Premio: ${p.nombre} (${p.marca})${p.codigo ? ` — Código: ${p.codigo}` : ''}`);
   });
+  const c = cupon.actual();
+  const descuento = descuentoPedido(ls);
+  if (c && descuento) renglones.push(`• Código de descuento ${c.codigo} (${c.porcentaje}% off, no aplica a combos) — -${formatoPrecio(descuento)}`);
   if (envio) renglones.push(`• Envío a ${envio.nombre} — ${envio.costo === null ? 'a cotizar' : textoCosto(envio.costo)}`);
   const partes = [
     '¡Hola RepZone! Quiero hacer este pedido:',

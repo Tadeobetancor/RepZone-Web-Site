@@ -13,7 +13,7 @@ const RESPALDO = '/catalogo.csv';
 const ESPERA_MAXIMA = 4000; // si Google tarda más, se muestra la última copia y no se hace esperar al cliente
 const CLAVE_COPIA = 'repzone-catalogo';
 
-import { CATEGORIAS } from './config.js';
+import { BENEFICIOS, CATEGORIAS } from './config.js';
 
 let promesa;
 
@@ -108,12 +108,14 @@ function normalizar(f) {
   const precioAnterior = numero(f.precio_anterior);
   // en la planilla simple no hay columna "¿Es combo?": la categoría Combos alcanza
   const combo = si(f.combo) || /^combos?$/.test(normalizarTexto(f.categoria || ''));
+  const cat = categoria(f.categoria, { nombre, combo });
+  const beneficios = lista(f.beneficios);
   return {
     // sin código, se arma uno con la marca y el nombre (sirve para el carrito y el link del producto)
     id: f.id?.trim() || normalizarTexto(`${marca} ${nombre || ''}`).replace(/ /g, '-'),
     nombre,
     marca,
-    categoria: categoria(f.categoria, { nombre, combo }),
+    categoria: cat,
     precio,
     precioAnterior,
     // "200 g = 5100 | 400 g = 7500"
@@ -128,7 +130,8 @@ function normalizar(f) {
     }),
     // "📸 Foto" (link de Drive que pega el cliente) manda; si está vacía, la foto de siempre
     fotos: lista(f.foto_link || f.fotos).map(rutaFoto),
-    beneficios: lista(f.beneficios),
+    // sin beneficios en la planilla, los de su categoría (así ningún producto queda sin "¿Por qué elegirlo?")
+    beneficios: beneficios.length ? beneficios : (BENEFICIOS[combo ? 'combos' : cat] ?? BENEFICIOS.variados),
     composicion: f.composicion || '',
     tablaNutricional: f.tabla_nutricional || '',
     modoUso: f.modo_uso || '',
