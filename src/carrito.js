@@ -142,11 +142,11 @@ export const cupon = {
   },
 };
 
-// Lo que descuenta el código: su % sobre los productos que no son combos (la ruleta y el envío no cuentan)
+// Lo que descuenta el código: su % sobre todos los productos, combos incluidos (la ruleta y el envío no cuentan)
 export function descuentoPedido(ls) {
   const c = cupon.actual();
   if (!c) return 0;
-  const base = ls.filter((l) => !l.producto.combo).reduce((s, l) => s + l.subtotal, 0);
+  const base = ls.reduce((s, l) => s + l.subtotal, 0);
   return Math.round((base * c.porcentaje) / 100);
 }
 
@@ -194,7 +194,7 @@ export function mensajeWhatsApp(ls, { entrega, nombre, zona, domicilio }) {
   });
   const c = cupon.actual();
   const descuento = descuentoPedido(ls);
-  if (c && descuento) renglones.push(`• Código de descuento ${c.codigo} (${c.porcentaje}% off, no aplica a combos) — -${formatoPrecio(descuento)}`);
+  if (c && descuento) renglones.push(`• Código de descuento ${c.codigo} (${c.porcentaje}% off) — -${formatoPrecio(descuento)}`);
   if (envio) renglones.push(`• Envío a ${envio.nombre} — ${envio.costo === null ? 'a cotizar' : textoCosto(envio.costo)}`);
   const partes = [
     '¡Hola RepZone! Quiero hacer este pedido:',

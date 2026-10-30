@@ -337,7 +337,7 @@ function pintarPedido(ls) {
       ${pasos()}
       <ul class="lineas">${ls.map(lineaProducto).join('')}</ul>
       ${tarjetaRuleta()}
-      ${tarjetaCupon(ls)}
+      ${tarjetaCupon()}
       <button type="button" class="carrito-seguir" data-seguir data-entra>+ Seguir sumando productos</button>
     </div>`;
   const falta = ruleta.pendientes() > 0;
@@ -352,7 +352,7 @@ function pintarPedido(ls) {
 
 // ---------- Código de descuento ----------
 // Debajo de la ruleta: se escribe el código y se aplica; ya aplicado, se ve cuánto descuenta y se puede quitar
-function tarjetaCupon(ls) {
+function tarjetaCupon() {
   const c = cupon.actual();
   if (!c) {
     return `
@@ -367,8 +367,6 @@ function tarjetaCupon(ls) {
       <p class="cupon-error" id="carrito-cupon-error" aria-live="polite">${escapar(cuponError)}</p>
     </form>`;
   }
-  const soloCombos = ls.length && ls.every((l) => l.producto.combo);
-  const hayCombos = ls.some((l) => l.producto.combo);
   return `
     <div class="cupon cupon-aplicado" data-entra>
       <div class="cupon-caja">
@@ -376,13 +374,6 @@ function tarjetaCupon(ls) {
         <span class="cupon-texto"><b>${escapar(c.codigo)}</b> · ${c.porcentaje}% off aplicado</span>
         <button type="button" class="cupon-quitar" data-quitar-cupon>Quitar</button>
       </div>
-      ${
-        soloCombos
-          ? '<p class="cupon-nota">El código no aplica a combos: sumá otro producto para usarlo.</p>'
-          : hayCombos
-            ? '<p class="cupon-nota">Los combos no tienen descuento con el código.</p>'
-            : ''
-      }
     </div>`;
 }
 

@@ -48,8 +48,8 @@ export const BENEFICIOS = {
   combos: ['ahorro: Ahorrás comprando en pack', 'calidad: Marcas de confianza', 'pack: Todo en un solo pedido'],
 };
 
-// Códigos de descuento: se escriben en el carrito (sin importar mayúsculas) y descuentan sobre todo
-// menos los combos (ni la ruleta ni el envío). Cuando se manda un pedido con el código, el atleta recibe
+// Códigos de descuento: se escriben en el carrito (sin importar mayúsculas) y descuentan sobre todos
+// los productos, combos incluidos (no sobre la ruleta ni el envío). Cuando se manda un pedido con el código, el atleta recibe
 // un aviso por WhatsApp: su teléfono va en api/aviso-cupon.js (ver COMO-EDITAR-EL-CATALOGO.md).
 export const CUPONES = [
   { codigo: 'Cami5off', porcentaje: 5, atleta: 'Cami' },

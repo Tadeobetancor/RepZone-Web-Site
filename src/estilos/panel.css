@@ -770,11 +770,6 @@ html:not(.con-movimiento) .particulas span {
   text-underline-offset: 3px;
 }
 
-.cupon-nota {
-  color: var(--gris);
-  font-size: 0.8rem;
-}
-
 .carrito-vacio {
   display: grid;
   justify-items: center;

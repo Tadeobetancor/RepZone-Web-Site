@@ -92,7 +92,7 @@ Hasta que la pestaña esté publicada, la web usa la lista de `public/envios.csv
 ## Códigos de descuento
 
 El cliente escribe el código en el carrito (paso "Tu pedido") y ve el descuento antes del total.
-Descuenta sobre todos los productos **menos los combos** (tampoco sobre la ruleta ni el envío),
+Descuenta sobre todos los productos, **combos incluidos** (no sobre la ruleta ni el envío),
 y el código y el descuento van en el mensaje de WhatsApp del pedido.
 
 Los códigos están en `src/config.js`, en `CUPONES` (no importan las mayúsculas al escribirlo):
