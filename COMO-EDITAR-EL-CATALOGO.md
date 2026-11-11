@@ -95,11 +95,29 @@ El cliente escribe el código en el carrito (paso "Tu pedido") y ve el descuento
 Descuenta sobre todos los productos, **combos incluidos** (no sobre la ruleta ni el envío),
 y el código y el descuento van en el mensaje de WhatsApp del pedido.
 
-Los códigos están en `src/config.js`, en `CUPONES` (no importan las mayúsculas al escribirlo):
+Los códigos se cargan en la pestaña **🏷️ Cupones** de la planilla, uno por fila:
 
-```js
-{ codigo: 'Nico5off', porcentaje: 5, atleta: 'Nico' },
-```
+| 🏷️ Código | % Descuento | 🏋️ Atleta | ✅ ¿Activo? |
+| --- | --- | --- | --- |
+| Nico5off | 5 | Nico | SI |
+| Juan10off | 10 | Juan | SI |
+| Verano | 15 | | NO |
+
+- **Código:** lo que escribe el cliente, sin espacios. No importan las mayúsculas.
+- **% Descuento:** solo el número (`10` = 10 %). También vale `10%` o `7,5`.
+- **Atleta:** de quién es el código. Con ese nombre se le manda el aviso (ver abajo). Puede quedar vacío.
+- **¿Activo?:** `SI` o `NO` de la lista. Con `NO` el código deja de valer sin borrarlo; vacío cuenta como `SI`.
+
+Por ahora el único tipo de descuento es un porcentaje sobre todo el pedido (sin la ruleta ni el envío).
+Si la planilla no responde, la web usa la última copia que bajó o la lista `CUPONES` de `src/config.js`.
+
+### Armar la pestaña (una sola vez)
+
+1. En la planilla, **Archivo › Importar › Subir** y elegí `RepZone-cupones.xlsx` (está en la carpeta `planillas`, ya trae
+   los códigos de Cami y Nico y los desplegables). En "Ubicación" elegí **Insertar hojas nuevas**.
+   La pestaña **Cupones para CÓMO USAR** trae la ayuda para copiar a la pestaña CÓMO USAR (después se puede borrar).
+2. **Archivo › Compartir › Publicar en la Web**: elegí la pestaña **🏷️ Cupones**, formato **.csv** y **Publicar**.
+3. Pegá ese link en `src/cupones-datos.js`, en `CUPONES_CSV`, y subí el cambio.
 
 ### Aviso al atleta
 
@@ -110,11 +128,12 @@ Cuando alguien manda un pedido con su código, al atleta le llega un WhatsApp av
    `I allow callmebot to send me messages`. Le contesta con su **apikey** (unos números).
 2. En Vercel: proyecto › **Settings › Environment Variables** › agregar `CALLMEBOT_NICO` (o `CALLMEBOT_CAMI`)
    con esa apikey, y volver a publicar (**Deployments › Redeploy**).
-3. Su teléfono va en `api/aviso-cupon.js`, en `ATLETAS` (con `+54 9` adelante).
+3. Su teléfono va en `api/aviso-cupon.js`, en `ATLETAS` (con `+54 9` adelante), con el mismo nombre que en la columna Atleta.
 
 Mientras no esté activado, el código funciona igual: solo no sale el aviso.
 
-**Atleta nuevo:** su código en `CUPONES`, su teléfono en `ATLETAS` y su apikey en Vercel (`CALLMEBOT_` + su nombre).
+**Atleta nuevo:** su código en la pestaña Cupones (con eso ya funciona el descuento). Para el aviso: su teléfono en `ATLETAS`
+y su apikey en Vercel (`CALLMEBOT_` + su nombre).
 
 ## Fotos (sin depender de nadie)
 

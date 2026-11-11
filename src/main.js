@@ -14,6 +14,7 @@ import './estilos/ruleta.css';
 
 import { cargarCatalogo } from './datos.js';
 import { cargarRuleta } from './ruleta-datos.js';
+import { cargarCupones } from './cupones-datos.js';
 import { iniciarCargador } from './ui/cargador.js';
 import { iniciarWhatsApp } from './ui/whatsapp-fab.js';
 import { iniciarMenu } from './ui/menu.js';
@@ -31,6 +32,7 @@ import { iniciarPausa } from './ui/pausa.js';
 // el catálogo se pide primero: mientras corre la pantalla de carga ya está bajando
 cargarCatalogo();
 cargarRuleta();
+cargarCupones();
 iniciarCargador();
 iniciarPausa();
 iniciarWhatsApp();

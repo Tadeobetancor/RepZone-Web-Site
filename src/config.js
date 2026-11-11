@@ -48,7 +48,8 @@ export const BENEFICIOS = {
   combos: ['ahorro: Ahorrás comprando en pack', 'calidad: Marcas de confianza', 'pack: Todo en un solo pedido'],
 };
 
-// Códigos de descuento: se escriben en el carrito (sin importar mayúsculas) y descuentan sobre todos
+// Códigos de descuento: se cargan en la pestaña "Cupones" de la planilla (cupones-datos.js); esta lista se usa
+// solo si la planilla no responde. Se escriben en el carrito (sin importar mayúsculas) y descuentan sobre todos
 // los productos, combos incluidos (no sobre la ruleta ni el envío). Cuando se manda un pedido con el código, el atleta recibe
 // un aviso por WhatsApp: su teléfono va en api/aviso-cupon.js (ver COMO-EDITAR-EL-CATALOGO.md).
 export const CUPONES = [

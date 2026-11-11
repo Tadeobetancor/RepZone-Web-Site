@@ -3,8 +3,11 @@
 // cada atleta lo activa una vez desde su celular y su clave va en las variables de entorno de Vercel
 // (ver COMO-EDITAR-EL-CATALOGO.md). Los teléfonos quedan acá y no llegan a la página.
 import { CUPONES } from '../src/config.js';
+import { leerPlanilla } from '../src/cupones-datos.js';
+import { normalizarTexto } from '../src/datos.js';
 
-// Por atleta (el nombre de CUPONES): su WhatsApp con código de país y la variable de Vercel con su clave
+// Por atleta (como figura en la columna Atleta de la pestaña Cupones, sin importar mayúsculas ni acentos):
+// su WhatsApp con código de país y la variable de Vercel con su clave
 const ATLETAS = {
   Nico: { telefono: '+5491168062516', clave: 'CALLMEBOT_NICO' },
   Cami: { telefono: '', clave: 'CALLMEBOT_CAMI' },
@@ -23,10 +26,13 @@ export default async function handler(req, res) {
     }
   }
   const codigo = String(datos?.codigo || '').toLowerCase();
-  const cupon = CUPONES.find((c) => c.codigo.toLowerCase() === codigo);
+  // los códigos salen de la planilla, igual que en el carrito (config.js si la planilla no responde)
+  const lista = (await leerPlanilla()) ?? CUPONES;
+  const cupon = lista.find((c) => c.codigo.toLowerCase() === codigo);
   if (!cupon) return res.status(404).json({ ok: false });
 
-  const atleta = ATLETAS[cupon.atleta];
+  const nombre = Object.keys(ATLETAS).find((n) => normalizarTexto(n) === normalizarTexto(cupon.atleta));
+  const atleta = ATLETAS[nombre];
   const apikey = atleta && process.env[atleta.clave];
   // todavía sin activar: el pedido sigue igual, solo no sale el aviso
   if (!atleta?.telefono || !apikey) return res.status(200).json({ ok: false, motivo: 'aviso sin configurar' });

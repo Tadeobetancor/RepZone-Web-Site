@@ -1,9 +1,10 @@
 // Carrito: lista de { id, sabor, tamano, cantidad }. Se guarda en el navegador de cada cliente.
 // Los precios no se guardan: siempre se toman del catálogo, así un cambio de precio se ve al instante.
-import { CUPONES, WHATSAPP } from './config.js';
+import { WHATSAPP } from './config.js';
 import { formatoPrecio } from './datos.js';
 import { ruletaActual } from './ruleta-datos.js';
 import { envioDe, textoCosto } from './envios-datos.js';
+import { cupones } from './cupones-datos.js';
 
 const CLAVE = 'repzone-carrito';
 const CLAVE_RULETA = 'repzone-ruleta';
@@ -13,7 +14,8 @@ let items = leer();
 // Ruleta: lista de giros del pedido, cada uno { premio }: null = todavía sin girar, o el premio que tocó
 // guardado entero ({ nombre, marca, codigo, foto }), así un cambio en la planilla no cambia lo que ya se ganó
 let giros = leerGiros();
-// Código de descuento aplicado (el código tal cual está en config.js) o ''
+// Código de descuento aplicado o ''. Se guarda tal cual y se busca en la lista cada vez, así vale
+// apenas carga la planilla y deja de valer si lo sacan o lo ponen en NO
 let codigoCupon = leerCupon();
 
 function leer() {
@@ -36,7 +38,7 @@ function leerGiros() {
 
 function leerCupon() {
   try {
-    return buscarCupon(localStorage.getItem(CLAVE_CUPON) || '')?.codigo ?? '';
+    return localStorage.getItem(CLAVE_CUPON) || '';
   } catch {
     return '';
   }
@@ -122,7 +124,7 @@ export const ruleta = {
 // Códigos de descuento: el código se compara sin mayúsculas ni espacios
 function buscarCupon(texto) {
   const t = String(texto).replace(/\s+/g, '').toLowerCase();
-  return t ? CUPONES.find((c) => c.codigo.toLowerCase() === t) : undefined;
+  return t ? cupones.find((c) => c.codigo.toLowerCase() === t) : undefined;
 }
 
 export const cupon = {

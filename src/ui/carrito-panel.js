@@ -2,6 +2,7 @@ import { cargarCatalogo, formatoPrecio, miniatura, normalizarTexto } from '../da
 import { carrito, cupon, descuentoPedido, envioPedido, lineas, mensajeWhatsApp, linkPedido, textoSabor, ruleta, totalPedido } from '../carrito.js';
 import { buscarLocalidades, cargarEnvios, textoCosto } from '../envios-datos.js';
 import { cargarRuleta, ruletaActual } from '../ruleta-datos.js';
+import { cargarCupones } from '../cupones-datos.js';
 import { abrirPanel, cerrarPanel } from './panel.js';
 import { abrirRuleta } from './ruleta.js';
 
@@ -45,6 +46,8 @@ export async function iniciarCarrito() {
   catalogo = await cargarCatalogo();
   contador();
   cargarRuleta().then(() => !el('carrito').hidden && pintar());
+  // un código guardado que viene de la planilla recién descuenta cuando llega la lista
+  cargarCupones().then(() => !el('carrito').hidden && pintar());
   // con la lista de localidades ya cargada, se actualiza el costo del envío (o la lista, si está buscando)
   cargarEnvios().then(() => {
     if (el('carrito').hidden || paso !== 'entrega') return;
